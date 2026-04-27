@@ -5,7 +5,6 @@
 1. Hessel Josef Imanuel (2330205030062)
 2. Apreldiovano Brian Walmaputra (2330305030089)
 3. Rafael Sanjaya (2330305030075)
-4. Nama 4 (NIM)
 
 ---
 
