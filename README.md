@@ -3,7 +3,7 @@
 ## 👥 Kelompok
 
 1. Hessel Josef Imanuel (2330205030062)
-2. Nama 2 (NIM)
+2. Apreldiovano Brian Walmaputra (2330305030089)
 3. Nama 3 (NIM)
 4. Nama 4 (NIM)
 
