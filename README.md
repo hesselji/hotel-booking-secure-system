@@ -133,20 +133,38 @@ Seluruh dokumentasi proyek tersedia pada folder `docs/`:
 
 ## 🔄 Workflow Repository
 
-Proyek ini menggunakan Git dengan sistem branching untuk mendukung kolaborasi tim:
+Proyek ini menggunakan Git dengan sistem branching untuk mendukung kolaborasi tim dan menjaga kualitas pengembangan.
 
-* `main` → versi final/stable
-* `develop` → penggabungan fitur
-* `feature/*` → pengembangan fitur (authentication, booking, payment, dll)
+### 🌿 Struktur Branch
 
-Setiap perubahan dilakukan melalui:
-
-1. Membuat branch dari `develop`
-2. Commit dengan pesan yang jelas
-3. Push dan membuat Pull Request
-4. Review sebelum merge ke `develop`
+* `main` → versi final / stabil (siap dikumpulkan atau demo)
+* `develop` → tempat penggabungan semua fitur
+* `feature/*` → pengembangan fitur utama (authentication, booking, payment, dll)
+* `feature/integration` → tahap integrasi dan pengujian seluruh fitur sebelum finalisasi
 
 ---
+
+### 🔁 Alur Pengembangan
+
+1. Setiap anggota membuat branch dari `develop`
+2. Pengembangan dilakukan pada branch `feature/*`
+3. Perubahan di-commit dengan pesan yang jelas dan deskriptif
+4. Branch di-push ke repository dan dibuat Pull Request ke `develop`
+5. Setelah direview, fitur digabung ke `develop`
+6. Semua fitur yang sudah lengkap diuji bersama di `feature/integration`
+7. Setelah sistem stabil, hasil akhir di-merge ke `main`
+
+---
+
+### 📌 Tujuan Workflow
+
+* Memisahkan pengembangan fitur agar tidak saling mengganggu
+* Memastikan setiap perubahan melalui proses review
+* Mengurangi konflik dan bug saat integrasi
+* Menjaga stabilitas sistem sebelum rilis final
+
+---
+
 
 ## ⚠️ Security Notes
 
