@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Hotel Admin | Dashboard</title>
+    <!-- Google Fonts & Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 10% 20%, rgba(15, 32, 39, 1) 0%, rgba(32, 58, 67, 1) 100%);
+            color: #eef2ff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Dashboard Layout */
+        .dashboard-container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+            backdrop-filter: blur(2px);
+        }
+
+        /* ========= SIDEBAR MODERN ========= */
+        .sidebar {
+            width: 280px;
+            background: rgba(18, 25, 45, 0.7);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.2rem;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f9d423, #ff8c32);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            letter-spacing: -0.3px;
+        }
+
+        .sidebar h2 i {
+            background: none;
+            -webkit-background-clip: unset;
+            color: #ff8c32;
+        }
+
+        .sidebar nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: none;
+            border-radius: 1.2rem;
+            padding: 0.85rem 1.2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            text-align: left;
+            color: #cbd5e6;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .nav-btn i {
+            width: 24px;
+            font-size: 1.2rem;
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(95deg, rgba(255, 140, 50, 0.2), rgba(255, 94, 0, 0.1));
+            color: #ffb347;
+            border-left: 3px solid #ff8c32;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        #logoutBtn {
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.2rem;
+            margin-top: 2rem;
+            color: #f87171;
+        }
+
+        #logoutBtn:hover {
+            background: rgba(248, 113, 113, 0.15);
+            color: #ff9e9e;
+        }
+
+        /* ========= MAIN CONTENT ========= */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem 2rem 2rem 2rem;
+            scroll-behavior: smooth;
+        }
+
+        /* Custom scroll */
+        .main-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .main-content::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+        .main-content::-webkit-scrollbar-thumb {
+            background: #ff8c32;
+            border-radius: 10px;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeInUp 0.4s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header & Stats Grid */
+        h1, .tab-header h2 {
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            margin-bottom: 1.5rem;
+        }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(120deg, #ffffff, #ffd6a5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            transition: all 0.25s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 140, 50, 0.5);
+        }
+
+        .stat-card i {
+            font-size: 2.2rem;
+            color: #ff8c32;
+            margin-bottom: 0.8rem;
+        }
+
+        .stat-card h3 {
+            font-size: 2.3rem;
+            font-weight: 800;
+            margin: 0.5rem 0 0.2rem;
+            color: white;
+        }
+
+        .stat-card p {
+            color: #cbd5e6;
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Table & Tab Header */
+        .tab-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(100deg, #ff8c32, #ff5e00);
+            border: none;
+            padding: 0.7rem 1.4rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 10px rgba(255, 94, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.02);
+            background: linear-gradient(100deg, #ff9e4a, #ff7000);
+            box-shadow: 0 6px 14px rgba(255, 94, 0, 0.4);
+        }
+
+        .table-wrapper {
+            background: rgba(20, 30, 45, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            overflow-x: auto;
+            padding: 0.2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            color: #ffd9b5;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e2e8f0;
+        }
+
+        tr:hover td {
+            background: rgba(255, 140, 50, 0.1);
+        }
+
+        /* Status Select & Buttons inside table */
+        .status-select {
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: 1px solid #ff8c32;
+            border-radius: 2rem;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .btn-danger {
+            background: rgba(220, 38, 38, 0.8);
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 2rem;
+            color: white;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .btn-sm {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 2rem;
+            margin: 0 2px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-sm.edit-room {
+            background: #3b82f6;
+            color: white;
+        }
+        .btn-sm.edit-room:hover {
+            background: #2563eb;
+        }
+
+        /* MODAL STYLING */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #1e293b;
+            border-radius: 2rem;
+            width: 550px;
+            max-width: 90%;
+            padding: 2rem;
+            box-shadow: 0 25px 40px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,140,50,0.4);
+            animation: fadeInScale 0.2s ease;
+        }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-content .close {
+            float: right;
+            font-size: 1.8rem;
+            font-weight: lighter;
+            cursor: pointer;
+            color: #facc15;
+            transition: 0.2s;
+        }
+        .modal-content .close:hover {
+            color: #ff8c32;
+        }
+        .modal-content h3 {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #cbd5e6;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.7rem;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 1rem;
+            color: white;
+            font-family: 'Inter', monospace;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #ff8c32;
+        }
+        button[type="submit"] {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 80px;
+                padding: 1rem 0.5rem;
+                align-items: center;
+            }
+            .sidebar h2 {
+                font-size: 0;
+                gap: 0;
+                justify-content: center;
+            }
+            .sidebar h2 i {
+                font-size: 1.8rem;
+            }
+            .nav-btn span {
+                display: none;
+            }
+            .nav-btn i {
+                margin: 0 auto;
+                width: auto;
+                font-size: 1.4rem;
+            }
+            .main-content {
+                padding: 1rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <h2><i class="fas fa-hotel"></i> <span>Hotel Admin</span></h2>
+            <nav>
+                <button class="nav-btn active" data-tab="dashboard"><i class="fas fa-chart-line"></i> <span>Dashboard</span></button>
+                <button class="nav-btn" data-tab="bookings"><i class="fas fa-calendar-check"></i> <span>Bookings</span></button>
+                <button class="nav-btn" data-tab="rooms"><i class="fas fa-door-open"></i> <span>Rooms</span></button>
+                <button class="nav-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></button>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <div id="dashboardTab" class="tab-content active">
+                <h1><i class="fas fa-chalkboard-user"></i> Dashboard</h1>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card"><i class="fas fa-spinner fa-pulse"></i><h3>--</h3><p>Loading...</p></div>
+                </div>
+            </div>
+            <div id="bookingsTab" class="tab-content">
+                <div class="tab-header">
+                    <h2><i class="fas fa-ticket-alt"></i> Manage Bookings</h2>
+                    <button id="addBookingBtn" class="btn-primary"><i class="fas fa-plus"></i> Add Booking</button>
+                </div>
+                <div class="table-wrapper">
+                    <table id="bookingsTable">
+                        <thead>
+                            <tr><th>ID</th><th>Customer</th><th>Room</th><th>Check In</th><th>Check Out</th><th>Total</th><th>Status</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="roomsTab" class="tab-content">
+                <div class="tab-header">
+                    <h2><i class="fas fa-bed"></i> Manage Rooms</h2>
+                    <button id="addRoomBtn" class="btn-primary"><i class="fas fa-plus"></i> Add Room</button>
+                </div>
+                <div class="table-wrapper">
+                    <table id="roomsTable">
+                        <thead><tr><th>ID</th><th>Number</th><th>Type</th><th>Price/Night</th><th>Status</th><th>Description</th><th>Actions</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content"><span class="close">&times;</span><h3>📅 Add / Edit Booking</h3><form id="bookingForm"></form></div>
+    </div>
+    <div id="roomModal" class="modal">
+        <div class="modal-content"><span class="close">&times;</span><h3>🛏️ Add / Edit Room</h3><form id="roomForm"></form></div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
