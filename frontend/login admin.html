@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Hotel Admin | Login</title>
+    <!-- Google Fonts & Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            background-size: 200% 200%;
+            animation: gradientShift 12s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism container */
+        .login-container {
+            width: 100%;
+            max-width: 460px;
+            margin: 0 auto;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 2.2rem 2rem 2.5rem;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .login-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 55px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Icon & Title */
+        .logo-area {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-icon {
+            font-size: 3.2rem;
+            background: linear-gradient(120deg, #f9d423, #fdaa33);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-card h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #ffffff, #e0e7ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-top: 0.25rem;
+        }
+
+        .sub {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            font-weight: 400;
+        }
+
+        /* Form styling */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: 0.3px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 1rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1.1rem;
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 0.9rem 1rem 0.9rem 2.8rem;
+            background: rgba(20, 30, 45, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 1.2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #ffffff;
+            transition: all 0.25s ease;
+            font-family: 'Inter', monospace;
+            backdrop-filter: blur(4px);
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: #f9b43a;
+            background: rgba(20, 30, 45, 0.8);
+            box-shadow: 0 0 0 3px rgba(249, 180, 58, 0.2);
+        }
+
+        .input-wrapper input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 400;
+        }
+
+        /* Toggle password */
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: color 0.2s;
+        }
+
+        .toggle-password:hover {
+            color: #f9b43a;
+        }
+
+        /* Login button */
+        .btn-login {
+            width: 100%;
+            padding: 0.9rem;
+            background: linear-gradient(100deg, #ff8c32, #ff5e00);
+            border: none;
+            border-radius: 1.5rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            margin-top: 0.5rem;
+            box-shadow: 0 5px 15px rgba(255, 94, 0, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .btn-login i {
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+        }
+
+        .btn-login:hover {
+            background: linear-gradient(100deg, #ff9e4a, #ff7000);
+            transform: scale(1.01);
+            box-shadow: 0 8px 22px rgba(255, 94, 0, 0.4);
+        }
+
+        .btn-login:hover i {
+            transform: translateX(4px);
+        }
+
+        .btn-login:active {
+            transform: scale(0.98);
+        }
+
+        /* Error message */
+        .error-msg {
+            margin-top: 1.2rem;
+            text-align: center;
+            font-size: 0.85rem;
+            padding: 0.6rem;
+            background: rgba(220, 38, 38, 0.2);
+            backdrop-filter: blur(8px);
+            border-radius: 1rem;
+            color: #ffb3b3;
+            font-weight: 500;
+            border-left: 3px solid #ff5e5e;
+            transition: all 0.2s;
+        }
+
+        /* Footer */
+        .login-footer {
+            text-align: center;
+            margin-top: 1.8rem;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 1.8rem 1.5rem 2rem;
+            }
+            .login-card h2 {
+                font-size: 1.5rem;
+            }
+            .input-wrapper input {
+                padding: 0.8rem 1rem 0.8rem 2.6rem;
+            }
+            .btn-login {
+                padding: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <div class="login-card">
+        <div class="logo-area">
+            <div class="logo-icon">
+                <i class="fas fa-hotel"></i>
+            </div>
+            <h2>Admin Login</h2>
+            <div class="sub">Hotel Booking System</div>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label><i class="fas fa-user-circle" style="margin-right: 6px;"></i> Username</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope"></i>
+                    <input type="text" id="username" placeholder="admin" required autocomplete="off">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-lock"></i> Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-key"></i>
+                    <input type="password" id="password" placeholder="••••••" required>
+                    <button type="button" class="toggle-password" id="togglePassBtn">
+                        <i class="far fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-login" id="loginBtn">
+                <span>Sign In</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+            <div id="loginError" class="error-msg" style="display: none;"></div>
+        </form>
+        <div class="login-footer">
+            <span>🔒 Secure Admin Access</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Password visibility toggle
+    const toggleBtn = document.getElementById('togglePassBtn');
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = toggleBtn.querySelector('i');
+
+    toggleBtn.addEventListener('click', function () {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        eyeIcon.classList.toggle('fa-eye');
+        eyeIcon.classList.toggle('fa-eye-slash');
+    });
+
+    // Login form submission (keep original backend logic)
+    const loginForm = document.getElementById('loginForm');
+    const errorDiv = document.getElementById('loginError');
+    const loginBtn = document.getElementById('loginBtn');
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = passwordInput.value;
+
+        // Reset error
+        errorDiv.style.display = 'none';
+        errorDiv.innerText = '';
+
+        // Show loading state on button
+        const originalBtnText = loginBtn.innerHTML;
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Authenticating...';
+        loginBtn.disabled = true;
+
+        try {
+            const response = await fetch('../../backend/api/login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ username, password })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                window.location.href = 'dashboard.html';
+            } else {
+                errorDiv.style.display = 'block';
+                errorDiv.innerText = data.message || 'Invalid username or password';
+                loginBtn.innerHTML = originalBtnText;
+                loginBtn.disabled = false;
+            }
+        } catch (err) {
+            errorDiv.style.display = 'block';
+            errorDiv.innerText = 'Network error. Please try again.';
+            loginBtn.innerHTML = originalBtnText;
+            loginBtn.disabled = false;
+        }
+    });
+</script>
+</body>
+</html>
