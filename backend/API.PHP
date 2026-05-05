@@ -1,328 +1,212 @@
 <?php
-/**
- * Platinum Horizon Hotel
- * Backend API - api.php
- * Letakkan file ini di folder yang sama dengan index.html
- * Jalankan dengan: php -S localhost:8000
- */
+require_once 'config.php';
 
-// ============================================================
-// KONFIGURASI DATABASE
-// ============================================================
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'platinum_horizon');
-define('DB_USER', 'root');       // Ganti sesuai username MySQL Anda
-define('DB_PASS', '');           // Ganti sesuai password MySQL Anda
-define('DB_CHARSET', 'utf8mb4');
+// Ambil action dari parameter GET atau POST
+$action = $_REQUEST['action'] ?? '';
 
-// ============================================================
-// CORS & HEADERS
-// ============================================================
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+// Data request (JSON atau form-data)
+$input = json_decode(file_get_contents('php://input'), true);
+if (!$input) $input = $_POST;
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-// ============================================================
-// KONEKSI DATABASE
-// ============================================================
-function getDB(): PDO {
-    static $pdo = null;
-    if ($pdo === null) {
-        $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
-        $options = [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES   => false,
-        ];
-        try {
-            $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
-        } catch (PDOException $e) {
-            sendError(500, 'Koneksi database gagal: ' . $e->getMessage());
-            exit;
-        }
-    }
-    return $pdo;
-}
-
-// ============================================================
-// HELPER FUNCTIONS
-// ============================================================
-function sendJSON($data, int $code = 200): void {
-    http_response_code($code);
-    echo json_encode(['success' => true, 'data' => $data], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-function sendError(int $code, string $message): void {
-    http_response_code($code);
-    echo json_encode(['success' => false, 'message' => $message], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-function getInput(): array {
-    $raw = file_get_contents('php://input');
-    $json = json_decode($raw, true);
-    return $json ?? array_merge($_GET, $_POST);
-}
-
-function generateBookingCode(): string {
-    $db = getDB();
-    do {
-        $code = 'PHR-' . strtoupper(substr(uniqid(), -6)) . rand(10, 99);
-        $stmt = $db->prepare("SELECT COUNT(*) FROM bookings WHERE booking_code = ?");
-        $stmt->execute([$code]);
-    } while ($stmt->fetchColumn() > 0);
-    return $code;
-}
-
-// ============================================================
-// ROUTER
-// ============================================================
-$method = $_SERVER['REQUEST_METHOD'];
-$path   = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
-$parts  = explode('/', $path);
-
-// Hapus prefix jika ada (misal: api/login -> login)
-$action = array_pop($parts);
-
+// Routing berdasarkan action
 switch ($action) {
-
-    // ----------------------------------------------------------
-    // POST /login
-    // ----------------------------------------------------------
     case 'login':
-        if ($method !== 'POST') sendError(405, 'Method tidak diizinkan');
-        $input = getInput();
-        $username = trim($input['username'] ?? '');
-        $password = trim($input['password'] ?? '');
-        $role     = trim($input['role'] ?? '');
-
-        if (!$username || !$password || !$role) {
-            sendError(400, 'Username, password, dan role wajib diisi');
-        }
-
-        $db   = getDB();
-        $stmt = $db->prepare("SELECT * FROM users WHERE username = ? AND password = MD5(?) AND role = ?");
-        $stmt->execute([$username, $password, $role]);
-        $user = $stmt->fetch();
-
-        if (!$user) {
-            sendError(401, 'Username, password, atau role tidak sesuai');
-        }
-
-        unset($user['password']);
-        sendJSON(['user' => $user, 'token' => base64_encode($user['username'] . ':' . time())]);
+        handleLogin($pdo, $input);
         break;
-
-    // ----------------------------------------------------------
-    // GET /rooms
-    // ----------------------------------------------------------
-    case 'rooms':
-        if ($method !== 'GET') sendError(405, 'Method tidak diizinkan');
-        $db   = getDB();
-        $stmt = $db->query("SELECT * FROM rooms ORDER BY price_per_night ASC");
-        $rows = $stmt->fetchAll();
-        foreach ($rows as &$r) {
-            $r['facilities'] = json_decode($r['facilities'], true) ?? [];
-        }
-        sendJSON($rows);
+    case 'logout':
+        handleLogout();
         break;
-
-    // ----------------------------------------------------------
-    // GET /bookings  (admin: semua | guest: filter by email)
-    // GET /bookings?email=xxx
-    // ----------------------------------------------------------
-    case 'bookings':
-        if ($method === 'GET') {
-            $db = getDB();
-            $email = $_GET['email'] ?? null;
-            if ($email) {
-                $stmt = $db->prepare("SELECT b.*, r.icon, r.gradient_class FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.guest_email = ? ORDER BY b.booking_date DESC");
-                $stmt->execute([$email]);
-            } else {
-                $stmt = $db->query("SELECT b.*, r.icon, r.gradient_class FROM bookings b JOIN rooms r ON b.room_id = r.id ORDER BY b.booking_date DESC");
-            }
-            sendJSON($stmt->fetchAll());
-        }
-
-        // POST /bookings - buat reservasi baru
-        elseif ($method === 'POST') {
-            $input = getInput();
-            $required = ['guest_name','guest_email','guest_phone','guest_id_number','room_id','check_in_date','check_out_date','guest_count'];
-            foreach ($required as $f) {
-                if (empty($input[$f])) sendError(400, "Field '$f' wajib diisi");
-            }
-
-            $db = getDB();
-
-            // Ambil data kamar
-            $stmt = $db->prepare("SELECT * FROM rooms WHERE id = ?");
-            $stmt->execute([$input['room_id']]);
-            $room = $stmt->fetch();
-            if (!$room) sendError(404, 'Kamar tidak ditemukan');
-            if ($room['available_rooms'] < 1) sendError(409, 'Kamar tidak tersedia saat ini');
-
-            // Hitung malam
-            $checkin  = new DateTime($input['check_in_date']);
-            $checkout = new DateTime($input['check_out_date']);
-            $nights   = (int)$checkin->diff($checkout)->days;
-            if ($nights < 1) sendError(400, 'Tanggal check-out harus setelah check-in');
-
-            $total = $room['price_per_night'] * $nights;
-            $code  = generateBookingCode();
-
-            // Simpan booking
-            $stmt = $db->prepare("
-                INSERT INTO bookings 
-                (booking_code, guest_name, guest_email, guest_phone, guest_id_number,
-                 room_id, room_type, check_in_date, check_out_date, nights, guest_count,
-                 price_per_night, total_amount, special_request, status, booked_by)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-            ");
-            $stmt->execute([
-                $code,
-                $input['guest_name'],
-                $input['guest_email'],
-                $input['guest_phone'],
-                $input['guest_id_number'],
-                $input['room_id'],
-                $room['type_name'],
-                $input['check_in_date'],
-                $input['check_out_date'],
-                $nights,
-                (int)$input['guest_count'],
-                $room['price_per_night'],
-                $total,
-                $input['special_request'] ?? null,
-                'confirmed',
-                $input['booked_by'] ?? 'guest'
-            ]);
-
-            $bookingId = $db->lastInsertId();
-
-            // Kurangi kamar tersedia
-            $db->prepare("UPDATE rooms SET available_rooms = available_rooms - 1 WHERE id = ?")->execute([$input['room_id']]);
-
-            sendJSON(['booking_id' => $bookingId, 'booking_code' => $code, 'total' => $total], 201);
-        }
-        else {
-            sendError(405, 'Method tidak diizinkan');
-        }
+    case 'get_stats':
+        requireLogin();
+        handleGetStats($pdo);
         break;
-
-    // ----------------------------------------------------------
-    // GET /booking/{id}
-    // ----------------------------------------------------------
-    case 'booking':
-        $id = $_GET['id'] ?? null;
-        if (!$id) sendError(400, 'ID booking diperlukan');
-        $db   = getDB();
-        $stmt = $db->prepare("SELECT b.*, r.facilities, r.icon, r.gradient_class FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.id = ?");
-        $stmt->execute([$id]);
-        $row = $stmt->fetch();
-        if (!$row) sendError(404, 'Booking tidak ditemukan');
-        $row['facilities'] = json_decode($row['facilities'], true) ?? [];
-        sendJSON($row);
+    case 'get_bookings':
+        requireLogin();
+        handleGetBookings($pdo);
         break;
-
-    // ----------------------------------------------------------
-    // PUT /checkin  { booking_id }
-    // ----------------------------------------------------------
-    case 'checkin':
-        if ($method !== 'PUT' && $method !== 'POST') sendError(405, 'Method tidak diizinkan');
-        $input = getInput();
-        $id = $input['booking_id'] ?? null;
-        if (!$id) sendError(400, 'booking_id diperlukan');
-
-        $db   = getDB();
-        $stmt = $db->prepare("SELECT * FROM bookings WHERE id = ?");
-        $stmt->execute([$id]);
-        $booking = $stmt->fetch();
-        if (!$booking) sendError(404, 'Booking tidak ditemukan');
-        if ($booking['status'] !== 'confirmed') sendError(409, 'Status booking tidak memungkinkan check-in');
-
-        $db->prepare("UPDATE bookings SET status='checkedin', check_in_time=NOW() WHERE id=?")->execute([$id]);
-        sendJSON(['message' => 'Check-in berhasil', 'check_in_time' => date('Y-m-d H:i:s')]);
+    case 'create_booking':
+        requireLogin();
+        handleCreateBooking($pdo, $input);
         break;
-
-    // ----------------------------------------------------------
-    // PUT /checkout  { booking_id }
-    // ----------------------------------------------------------
-    case 'checkout':
-        if ($method !== 'PUT' && $method !== 'POST') sendError(405, 'Method tidak diizinkan');
-        $input = getInput();
-        $id = $input['booking_id'] ?? null;
-        if (!$id) sendError(400, 'booking_id diperlukan');
-
-        $db   = getDB();
-        $stmt = $db->prepare("SELECT * FROM bookings WHERE id = ?");
-        $stmt->execute([$id]);
-        $booking = $stmt->fetch();
-        if (!$booking) sendError(404, 'Booking tidak ditemukan');
-        if ($booking['status'] !== 'checkedin') sendError(409, 'Tamu belum check-in');
-
-        $db->prepare("UPDATE bookings SET status='checkedout', check_out_time=NOW() WHERE id=?")->execute([$id]);
-        $db->prepare("UPDATE rooms SET available_rooms = available_rooms + 1 WHERE id=?")->execute([$booking['room_id']]);
-
-        sendJSON(['message' => 'Check-out berhasil']);
+    case 'update_booking':
+        requireLogin();
+        handleUpdateBooking($pdo, $input);
         break;
-
-    // ----------------------------------------------------------
-    // DELETE /cancel  { booking_id }
-    // ----------------------------------------------------------
-    case 'cancel':
-        if ($method !== 'DELETE' && $method !== 'POST') sendError(405, 'Method tidak diizinkan');
-        $input = getInput();
-        $id = $input['booking_id'] ?? null;
-        if (!$id) sendError(400, 'booking_id diperlukan');
-
-        $db   = getDB();
-        $stmt = $db->prepare("SELECT * FROM bookings WHERE id = ?");
-        $stmt->execute([$id]);
-        $booking = $stmt->fetch();
-        if (!$booking) sendError(404, 'Booking tidak ditemukan');
-        if (in_array($booking['status'], ['checkedin','checkedout'])) sendError(409, 'Tidak dapat membatalkan booking yang sudah check-in/out');
-
-        $db->prepare("UPDATE bookings SET status='cancelled' WHERE id=?")->execute([$id]);
-        if ($booking['status'] === 'confirmed') {
-            $db->prepare("UPDATE rooms SET available_rooms = available_rooms + 1 WHERE id=?")->execute([$booking['room_id']]);
-        }
-
-        sendJSON(['message' => 'Reservasi berhasil dibatalkan']);
+    case 'delete_booking':
+        requireLogin();
+        handleDeleteBooking($pdo, $input);
         break;
-
-    // ----------------------------------------------------------
-    // GET /dashboard
-    // ----------------------------------------------------------
-    case 'dashboard':
-        if ($method !== 'GET') sendError(405, 'Method tidak diizinkan');
-        $db = getDB();
-
-        $totalRooms     = $db->query("SELECT SUM(total_rooms) FROM rooms")->fetchColumn();
-        $availableRooms = $db->query("SELECT SUM(available_rooms) FROM rooms")->fetchColumn();
-        $totalBookings  = $db->query("SELECT COUNT(*) FROM bookings WHERE status != 'cancelled'")->fetchColumn();
-        $checkedIn      = $db->query("SELECT COUNT(*) FROM bookings WHERE status = 'checkedin'")->fetchColumn();
-        $totalRevenue   = $db->query("SELECT SUM(total_amount) FROM bookings WHERE status IN ('confirmed','checkedin','checkedout')")->fetchColumn();
-        $todayBookings  = $db->query("SELECT COUNT(*) FROM bookings WHERE DATE(booking_date) = CURDATE()")->fetchColumn();
-
-        sendJSON([
-            'total_rooms'     => (int)$totalRooms,
-            'available_rooms' => (int)$availableRooms,
-            'occupied_rooms'  => (int)$totalRooms - (int)$availableRooms,
-            'total_bookings'  => (int)$totalBookings,
-            'checked_in'      => (int)$checkedIn,
-            'total_revenue'   => (float)$totalRevenue,
-            'today_bookings'  => (int)$todayBookings,
-        ]);
+    case 'get_rooms':
+        requireLogin();
+        handleGetRooms($pdo);
         break;
-
+    case 'add_room':
+        requireLogin();
+        handleAddRoom($pdo, $input);
+        break;
+    case 'update_room':
+        requireLogin();
+        handleUpdateRoom($pdo, $input);
+        break;
+    case 'delete_room':
+        requireLogin();
+        handleDeleteRoom($pdo, $input);
+        break;
     default:
-        sendError(404, 'Endpoint tidak ditemukan');
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Invalid action']);
+}
+exit;
+
+// ========== FUNGSI HANDLER ==========
+function handleLogin($pdo, $input) {
+    $username = trim($input['username'] ?? '');
+    $password = $input['password'] ?? '';
+    if (empty($username) || empty($password)) {
+        echo json_encode(['success' => false, 'message' => 'Username and password required']);
+        return;
+    }
+    $stmt = $pdo->prepare("SELECT id, password_hash FROM admin_users WHERE username = ?");
+    $stmt->execute([$username]);
+    $user = $stmt->fetch();
+    if ($user && password_verify($password, $user['password_hash'])) {
+        $_SESSION['admin_logged_in'] = true;
+        $_SESSION['admin_id'] = $user['id'];
+        echo json_encode(['success' => true, 'message' => 'Login successful']);
+    } else {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Invalid credentials']);
+    }
+}
+
+function handleLogout() {
+    session_destroy();
+    echo json_encode(['success' => true, 'message' => 'Logged out']);
+}
+
+function handleGetStats($pdo) {
+    $stmt = $pdo->query("SELECT COUNT(*) FROM bookings WHERE booking_status != 'cancelled'");
+    $totalBookings = $stmt->fetchColumn();
+    $stmt = $pdo->query("SELECT COUNT(*) FROM rooms");
+    $totalRooms = $stmt->fetchColumn();
+    $stmt = $pdo->query("SELECT COALESCE(SUM(total_price), 0) FROM bookings WHERE booking_status IN ('confirmed','checked_in','checked_out')");
+    $revenue = $stmt->fetchColumn();
+    $stmt = $pdo->query("SELECT COUNT(*) FROM rooms WHERE status = 'available'");
+    $availableRooms = $stmt->fetchColumn();
+    echo json_encode([
+        'success' => true,
+        'data' => [
+            'totalBookings' => (int)$totalBookings,
+            'totalRooms' => (int)$totalRooms,
+            'revenue' => (float)$revenue,
+            'availableRooms' => (int)$availableRooms
+        ]
+    ]);
+}
+
+function handleGetBookings($pdo) {
+    $stmt = $pdo->query("
+        SELECT b.*, r.room_number, r.room_type 
+        FROM bookings b
+        JOIN rooms r ON b.room_id = r.id
+        ORDER BY b.check_in_date DESC
+    ");
+    $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    echo json_encode(['success' => true, 'data' => $bookings]);
+}
+
+function handleCreateBooking($pdo, $input) {
+    $customer_name = trim($input['customer_name'] ?? '');
+    $customer_email = trim($input['customer_email'] ?? '');
+    $customer_phone = trim($input['customer_phone'] ?? '');
+    $room_id = (int)($input['room_id'] ?? 0);
+    $check_in = $input['check_in_date'] ?? '';
+    $check_out = $input['check_out_date'] ?? '';
+    if (empty($customer_name) || empty($customer_email) || empty($customer_phone) || !$room_id || !$check_in || !$check_out) {
+        echo json_encode(['success' => false, 'message' => 'All fields required']);
+        return;
+    }
+    $stmt = $pdo->prepare("SELECT price_per_night FROM rooms WHERE id = ?");
+    $stmt->execute([$room_id]);
+    $room = $stmt->fetch();
+    if (!$room) {
+        echo json_encode(['success' => false, 'message' => 'Invalid room']);
+        return;
+    }
+    $nights = (strtotime($check_out) - strtotime($check_in)) / (60*60*24);
+    if ($nights <= 0) {
+        echo json_encode(['success' => false, 'message' => 'Invalid dates']);
+        return;
+    }
+    $total_price = $nights * $room['price_per_night'];
+    $stmt = $pdo->prepare("
+        INSERT INTO bookings (customer_name, customer_email, customer_phone, room_id, check_in_date, check_out_date, total_price, booking_status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed')
+    ");
+    $success = $stmt->execute([$customer_name, $customer_email, $customer_phone, $room_id, $check_in, $check_out, $total_price]);
+    echo json_encode(['success' => $success, 'message' => $success ? 'Booking created' : 'Creation failed']);
+}
+
+function handleUpdateBooking($pdo, $input) {
+    $booking_id = (int)($input['booking_id'] ?? 0);
+    $new_status = $input['status'] ?? '';
+    if (!$booking_id || !in_array($new_status, ['confirmed','checked_in','checked_out','cancelled'])) {
+        echo json_encode(['success' => false, 'message' => 'Invalid data']);
+        return;
+    }
+    $stmt = $pdo->prepare("UPDATE bookings SET booking_status = ? WHERE id = ?");
+    $success = $stmt->execute([$new_status, $booking_id]);
+    echo json_encode(['success' => $success, 'message' => $success ? 'Status updated' : 'Update failed']);
+}
+
+function handleDeleteBooking($pdo, $input) {
+    $booking_id = (int)($input['booking_id'] ?? 0);
+    $stmt = $pdo->prepare("DELETE FROM bookings WHERE id = ?");
+    $success = $stmt->execute([$booking_id]);
+    echo json_encode(['success' => $success, 'message' => $success ? 'Booking deleted' : 'Delete failed']);
+}
+
+function handleGetRooms($pdo) {
+    $stmt = $pdo->query("SELECT * FROM rooms ORDER BY room_number");
+    $rooms = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    echo json_encode(['success' => true, 'data' => $rooms]);
+}
+
+function handleAddRoom($pdo, $input) {
+    $room_number = trim($input['room_number'] ?? '');
+    $room_type = $input['room_type'] ?? '';
+    $price = (float)($input['price_per_night'] ?? 0);
+    $status = $input['status'] ?? 'available';
+    $description = trim($input['description'] ?? '');
+    if (!$room_number || !$room_type || $price <= 0) {
+        echo json_encode(['success' => false, 'message' => 'Room number, type and valid price required']);
+        return;
+    }
+    $stmt = $pdo->prepare("INSERT INTO rooms (room_number, room_type, price_per_night, status, description) VALUES (?, ?, ?, ?, ?)");
+    $success = $stmt->execute([$room_number, $room_type, $price, $status, $description]);
+    echo json_encode(['success' => $success, 'message' => $success ? 'Room added' : 'Add failed']);
+}
+
+function handleUpdateRoom($pdo, $input) {
+    $room_id = (int)($input['id'] ?? 0);
+    $room_number = trim($input['room_number'] ?? '');
+    $room_type = $input['room_type'] ?? '';
+    $price = (float)($input['price_per_night'] ?? 0);
+    $status = $input['status'] ?? 'available';
+    $description = trim($input['description'] ?? '');
+    if (!$room_id || !$room_number || !$room_type || $price <= 0) {
+        echo json_encode(['success' => false, 'message' => 'Invalid room data']);
+        return;
+    }
+    $stmt = $pdo->prepare("UPDATE rooms SET room_number = ?, room_type = ?, price_per_night = ?, status = ?, description = ? WHERE id = ?");
+    $success = $stmt->execute([$room_number, $room_type, $price, $status, $description, $room_id]);
+    echo json_encode(['success' => $success, 'message' => $success ? 'Room updated' : 'Update failed']);
+}
+
+function handleDeleteRoom($pdo, $input) {
+    $room_id = (int)($input['room_id'] ?? 0);
+    $stmt = $pdo->prepare("DELETE FROM rooms WHERE id = ?");
+    $success = $stmt->execute([$room_id]);
+    echo json_encode(['success' => $success, 'message' => $success ? 'Room deleted' : 'Delete failed']);
 }
 ?>
