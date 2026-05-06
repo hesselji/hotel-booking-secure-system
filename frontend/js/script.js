@@ -1,5 +1,5 @@
 // ==================== KONFIGURASI ====================
-const API_URL = '../../backend/api.php';
+const API_URL = '../backend/api.php';
 
 // Fungsi umum untuk memanggil API
 async function apiCall(action, method = 'POST', body = null) {
