@@ -44,3 +44,21 @@ CREATE TABLE bookings (
     ON DELETE CASCADE
 );
 
+INSERT INTO admin_users(username, password_hash)
+VALUES(
+    'admin',
+    'HASH_HASIL_BCRYPT'
+);
+
+INSERT INTO rooms(
+    room_number,
+    room_type,
+    price_per_night,
+    status,
+    description
+)
+VALUES
+('101', 'Single', 50, 'available', 'Single room'),
+('102', 'Double', 80, 'available', 'Double room'),
+('201', 'Suite', 150, 'available', 'Luxury suite');
+
