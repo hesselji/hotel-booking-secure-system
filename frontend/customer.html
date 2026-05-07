@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>LuxeBooking · Customer Dashboard</title>
+  <title>LuxeBooking · Hotel Management System (DFD Level 0-1)</title>
   <!-- Google Fonts & Font Awesome -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -305,6 +305,15 @@
     .btn-danger:hover {
       background: #dc2626;
     }
+    .btn-success {
+      background: rgba(34, 197, 94, 0.8);
+      border: none;
+      padding: 0.3rem 0.8rem;
+      border-radius: 2rem;
+      color: white;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
 
     /* MODAL STYLE */
     .modal {
@@ -377,7 +386,7 @@
       margin-top: 1rem;
     }
 
-    /* LOGIN CARD (overlay style) */
+    /* LOGIN CARD */
     .login-overlay {
       position: fixed;
       top: 0;
@@ -395,7 +404,7 @@
       background: rgba(20, 30, 45, 0.9);
       backdrop-filter: blur(16px);
       border-radius: 2rem;
-      width: 450px;
+      width: 480px;
       max-width: 90%;
       padding: 2rem;
       border: 1px solid rgba(255,140,50,0.5);
@@ -433,7 +442,6 @@
       z-index: 3000;
       font-weight: 500;
       box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      transition: 0.2s;
     }
     @media (max-width: 768px) {
       .sidebar {
@@ -465,114 +473,83 @@
 </head>
 <body>
 
-<!-- LOGIN SECTION -->
+<!-- LOGIN + REGISTER SECTION -->
 <div id="loginContainer" class="login-overlay">
   <div class="login-card">
-    <i class="fas fa-calendar-check"></i>
-    <h2>Welcome to LuxeBooking</h2>
-    <form id="loginFormCustomer">
-      <input type="text" id="loginName" placeholder="Nama Lengkap" required>
-      <input type="email" id="loginEmail" placeholder="Email" required>
-      <input type="tel" id="loginPhone" placeholder="Nomor Telepon (opsional)">
-      <button type="submit" class="btn-primary" style="width:100%; margin-top: 0.8rem;">Masuk ke Dashboard</button>
-    </form>
-    <p style="font-size: 0.7rem; margin-top: 1.5rem; opacity:0.7;">✨ Booking tersimpan dengan akun email anda</p>
+    <i class="fas fa-hotel"></i>
+    <h2>LuxeBooking · Hotel System</h2>
+    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+      <button id="showLoginBtn" class="btn-primary" style="flex:1;">Login</button>
+      <button id="showRegisterBtn" class="btn-secondary" style="flex:1;">Daftar</button>
+    </div>
+    <div id="loginPanel">
+      <form id="loginForm">
+        <input type="email" id="loginEmail" placeholder="Email" required>
+        <input type="password" id="loginPassword" placeholder="Kata Sandi" required>
+        <button type="submit" class="btn-primary" style="width:100%;">Masuk ke Dashboard</button>
+      </form>
+    </div>
+    <div id="registerPanel" style="display:none;">
+      <form id="registerForm">
+        <input type="text" id="regName" placeholder="Nama Lengkap" required>
+        <input type="email" id="regEmail" placeholder="Email" required>
+        <input type="tel" id="regPhone" placeholder="No. Telepon">
+        <input type="password" id="regPassword" placeholder="Kata Sandi" required>
+        <button type="submit" class="btn-primary" style="width:100%;">Buat Akun</button>
+      </form>
+    </div>
+    <p style="font-size:0.7rem; margin-top:1rem;">Demo Admin: admin@luxe.com / admin123</p>
   </div>
 </div>
 
-<!-- DASHBOARD (customer) -->
+<!-- DASHBOARD (dinamis) -->
 <div id="dashboardContainer" style="display: none;">
   <div class="dashboard-container">
-    <aside class="sidebar">
-      <h2><i class="fas fa-calendar-alt"></i> <span>LuxeBooking</span></h2>
-      <nav>
-        <button class="nav-btn active" data-tab="dashboard"><i class="fas fa-chart-line"></i> <span>Dashboard</span></button>
-        <button class="nav-btn" data-tab="mybookings"><i class="fas fa-calendar-check"></i> <span>Booking Saya</span></button>
-        <button class="nav-btn" id="logoutBtnSidebar"><i class="fas fa-sign-out-alt"></i> <span>Keluar</span></button>
-      </nav>
+    <aside class="sidebar" id="dynamicSidebar">
+      <!-- sidebar diisi JS -->
     </aside>
-    <main class="main-content">
-      <!-- TAB DASHBOARD -->
-      <div id="dashboardTab" class="tab-content active">
-        <h1><i class="fas fa-chalkboard-user"></i> Dashboard Saya</h1>
-        <div class="stats-grid" id="statsGridCustomer">
-          <div class="stat-card"><i class="fas fa-spinner fa-pulse"></i><h3>--</h3><p>Memuat...</p></div>
-        </div>
-        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.8rem; opacity: 0.7;">
-          <i class="fas fa-star-of-life"></i> Selamat datang! Kelola semua booking Anda dengan mudah.
-        </div>
-      </div>
-
-      <!-- TAB BOOKING SAYA -->
-      <div id="mybookingsTab" class="tab-content">
-        <div class="tab-header">
-          <h2><i class="fas fa-ticket-alt"></i> Daftar Booking</h2>
-          <button id="openBookingModalBtn" class="btn-primary"><i class="fas fa-plus-circle"></i> Booking Baru</button>
-        </div>
-        <div class="table-wrapper">
-          <table id="customerBookingsTable">
-            <thead>
-              <tr>
-                <th>ID</th><th>Nama Pemesan</th><th>Tanggal</th><th>Waktu</th><th>Layanan</th><th>Tamu</th><th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="bookingsTableBody">
-              <tr><td colspan="7" style="text-align:center;">Belum ada booking</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div style="margin-top: 1rem; text-align: right;">
-          <button id="clearAllBookingsCustomerBtn" class="btn-secondary"><i class="fas fa-trash-alt"></i> Hapus Semua Booking Saya</button>
-        </div>
-      </div>
+    <main class="main-content" id="dynamicMainContent">
+      <!-- konten tab dinamis -->
     </main>
   </div>
 </div>
 
-<!-- MODAL ADD BOOKING -->
-<div id="bookingModal" class="modal">
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <h3><i class="fas fa-calendar-plus"></i> Booking Layanan</h3>
-    <form id="newBookingForm">
-      <div class="form-group">
-        <label>Nama Lengkap (Pemesan)</label>
-        <input type="text" id="modalBookingName" required placeholder="Nama sesuai identitas">
-      </div>
-      <div class="form-group">
-        <label>Tanggal Booking</label>
-        <input type="date" id="modalBookingDate" required>
-      </div>
-      <div class="form-group">
-        <label>Waktu</label>
-        <input type="time" id="modalBookingTime" required>
-      </div>
-      <div class="form-group">
-        <label>Jumlah Tamu</label>
-        <input type="number" id="modalGuests" min="1" value="1" required>
-      </div>
-      <div class="form-group">
-        <label>Tipe Layanan</label>
-        <select id="modalServiceType">
-          <option value="Meja Restoran">🍽️ Meja Restoran</option>
-          <option value="Kamar Hotel">🏨 Kamar Hotel</option>
-          <option value="Spa & Relaksasi">💆 Spa & Relaksasi</option>
-          <option value="Meeting Room">📋 Meeting Room</option>
-          <option value="Konsultasi">🎧 Konsultasi</option>
-        </select>
-      </div>
-      <button type="submit" class="btn-primary">Buat Booking</button>
-    </form>
-  </div>
-</div>
-
 <script>
-  // ---------- STORAGE KEYS ----------
-  const STORAGE_CUSTOMERS = "luxe_customers_v2";
-  const STORAGE_BOOKINGS = "luxe_bookings_v2";
-  let currentCustomer = null;
+  // ================================ DATABASE (localStorage) sesuai DFD ==================================
+  // stores: users, rooms, bookings, transactions
+  const STORAGE = { users: 'luxe_users', rooms: 'luxe_rooms', bookings: 'luxe_bookings', transactions: 'luxe_transactions' };
+  let currentUser = null;
 
-  // Helper toast
+  // Helper init data default
+  function initData() {
+    if(!localStorage.getItem(STORAGE.users)) {
+      const defaultUsers = [
+        { id: 'adm1', email: 'admin@luxe.com', password: 'admin123', name: 'Administrator', role: 'admin', phone: '' },
+        { id: 'cust_demo', email: 'customer@demo.com', password: 'pass123', name: 'Budi Santoso', role: 'customer', phone: '08123456789' }
+      ];
+      localStorage.setItem(STORAGE.users, JSON.stringify(defaultUsers));
+    }
+    if(!localStorage.getItem(STORAGE.rooms)) {
+      const rooms = [
+        { id: 'room_std', type: 'Standard Room', pricePerNight: 500000, stock: 10, description: 'Nyaman dengan AC & TV' },
+        { id: 'room_dlx', type: 'Deluxe Room', pricePerNight: 800000, stock: 6, description: 'Pemandangan kota, bathtub' },
+        { id: 'room_suite', type: 'Suite Room', pricePerNight: 1200000, stock: 3, description: 'VIP service, ruang tamu luas' }
+      ];
+      localStorage.setItem(STORAGE.rooms, JSON.stringify(rooms));
+    }
+    if(!localStorage.getItem(STORAGE.bookings)) localStorage.setItem(STORAGE.bookings, JSON.stringify([]));
+    if(!localStorage.getItem(STORAGE.transactions)) localStorage.setItem(STORAGE.transactions, JSON.stringify([]));
+  }
+  function getUsers() { return JSON.parse(localStorage.getItem(STORAGE.users)); }
+  function getRooms() { return JSON.parse(localStorage.getItem(STORAGE.rooms)); }
+  function getBookings() { return JSON.parse(localStorage.getItem(STORAGE.bookings)); }
+  function getTransactions() { return JSON.parse(localStorage.getItem(STORAGE.transactions)); }
+  function saveUsers(data) { localStorage.setItem(STORAGE.users, JSON.stringify(data)); }
+  function saveRooms(data) { localStorage.setItem(STORAGE.rooms, JSON.stringify(data)); }
+  function saveBookings(data) { localStorage.setItem(STORAGE.bookings, JSON.stringify(data)); }
+  function saveTransactions(data) { localStorage.setItem(STORAGE.transactions, JSON.stringify(data)); }
+
+  // Helper UI
   function showToast(msg, isErr = false) {
     let existing = document.querySelector('.toast-custom');
     if(existing) existing.remove();
@@ -583,318 +560,246 @@
     setTimeout(() => toast.remove(), 2600);
   }
 
-  // Data Customers
-  function getCustomers() {
-    const raw = localStorage.getItem(STORAGE_CUSTOMERS);
-    return raw ? JSON.parse(raw) : [];
-  }
-  function saveCustomers(cust) {
-    localStorage.setItem(STORAGE_CUSTOMERS, JSON.stringify(cust));
-  }
-  function registerOrLogin(name, email, phone) {
-    if(!name || !email) return null;
-    let customers = getCustomers();
-    let existing = customers.find(c => c.email.toLowerCase() === email.toLowerCase());
-    if(existing) {
-      existing.name = name;
-      if(phone) existing.phone = phone;
-      saveCustomers(customers);
-      return existing;
-    } else {
-      let newCust = { email: email.toLowerCase(), name: name, phone: phone || '' };
-      customers.push(newCust);
-      saveCustomers(customers);
-      return newCust;
+  // Fungsi cek ketersediaan kamar sederhana (tidak overlap tanggal)
+  function isRoomAvailable(roomId, checkin, checkout, excludeBookingId = null) {
+    const bookings = getBookings();
+    const checkinDate = new Date(checkin);
+    const checkoutDate = new Date(checkout);
+    const overlapping = bookings.filter(b => b.roomId === roomId && b.paymentStatus === 'paid' && b.id !== excludeBookingId);
+    for(let b of overlapping) {
+      let bStart = new Date(b.checkinDate);
+      let bEnd = new Date(b.checkoutDate);
+      if((checkinDate < bEnd && checkoutDate > bStart)) return false;
     }
+    return true;
   }
 
-  // Bookings
-  function getAllBookings() {
-    const raw = localStorage.getItem(STORAGE_BOOKINGS);
-    return raw ? JSON.parse(raw) : [];
-  }
-  function saveAllBookings(bookings) {
-    localStorage.setItem(STORAGE_BOOKINGS, JSON.stringify(bookings));
-  }
-  function getMyBookings(customerEmail) {
-    return getAllBookings().filter(b => b.customerEmail && b.customerEmail.toLowerCase() === customerEmail.toLowerCase());
-  }
-  function addBooking(booking) {
-    let all = getAllBookings();
-    all.push(booking);
-    saveAllBookings(all);
-  }
-  function deleteBookingById(bookingId, customerEmail) {
-    let all = getAllBookings();
-    let filtered = all.filter(b => !(b.id === bookingId && b.customerEmail.toLowerCase() === customerEmail.toLowerCase()));
-    if(filtered.length !== all.length) {
-      saveAllBookings(filtered);
-      return true;
-    }
-    return false;
-  }
-  function deleteAllMyBookings(customerEmail) {
-    let all = getAllBookings();
-    let remaining = all.filter(b => b.customerEmail.toLowerCase() !== customerEmail.toLowerCase());
-    saveAllBookings(remaining);
-  }
-
-  function generateId() { return Date.now() + '-' + Math.random().toString(36).substr(2, 6); }
-  
-  function isValidBookingDate(dateStr) {
-    if(!dateStr) return false;
-    const selected = new Date(dateStr);
-    const today = new Date(); today.setHours(0,0,0,0);
-    return selected >= today;
-  }
-
-  // Render statistik untuk dashboard customer
-  function renderDashboardStats() {
-    if(!currentCustomer) return;
-    const myBookings = getMyBookings(currentCustomer.email);
-    const totalBookings = myBookings.length;
-    const today = new Date().toISOString().slice(0,10);
-    const upcoming = myBookings.filter(b => b.date >= today).length;
-    const totalGuests = myBookings.reduce((sum, b) => sum + (b.guests || 1), 0);
-    const statsHtml = `
-      <div class="stat-card"><i class="fas fa-calendar-week"></i><h3>${totalBookings}</h3><p>Total Booking</p></div>
-      <div class="stat-card"><i class="fas fa-hourglass-half"></i><h3>${upcoming}</h3><p>Booking Mendatang</p></div>
-      <div class="stat-card"><i class="fas fa-users"></i><h3>${totalGuests}</h3><p>Total Tamu</p></div>
-      <div class="stat-card"><i class="fas fa-concierge-bell"></i><h3>${myBookings.length > 0 ? myBookings[0].service : '-'}</h3><p>Layanan Terbaru</p></div>
-    `;
-    document.getElementById('statsGridCustomer').innerHTML = statsHtml;
-  }
-
-  // Render tabel booking customer
-  function renderBookingsTable() {
-    const tbody = document.getElementById('bookingsTableBody');
-    if(!currentCustomer) return;
-    const myBookings = getMyBookings(currentCustomer.email);
-    if(myBookings.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">✨ Belum ada booking. Buat booking baru!</td></tr>';
-      return;
-    }
-    // sort by date & time asc
-    myBookings.sort((a,b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
-    let rows = '';
-    myBookings.forEach(b => {
-      let displayDate = b.date.split('-').reverse().join('/');
-      rows += `
-        <tr>
-          <td>${b.id.slice(-8)}</td>
-          <td>${escapeHtml(b.name)}</td>
-          <td>${displayDate}</td>
-          <td>${b.time}</td>
-          <td>${escapeHtml(b.service)}</td>
-          <td>${b.guests}</td>
-          <td><button class="btn-danger delete-booking" data-id="${b.id}"><i class="fas fa-trash"></i> Batal</button></td>
-        </tr>
-      `;
-    });
-    tbody.innerHTML = rows;
-    // attach delete event
-    document.querySelectorAll('.delete-booking').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = btn.getAttribute('data-id');
-        if(confirm('Batalkan booking ini?')) {
-          if(deleteBookingById(id, currentCustomer.email)) {
-            renderBookingsTable();
-            renderDashboardStats();
-            showToast('Booking dibatalkan', false);
-          } else { showToast('Gagal', true); }
-        }
-      });
-    });
-  }
-
-  function escapeHtml(str) { 
-    if(!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-      if(m === '&') return '&amp;';
-      if(m === '<') return '&lt;';
-      if(m === '>') return '&gt;';
-      return m;
-    });
-  }
-
-  // Handle add booking via modal
-  function setupBookingModal() {
-    const modal = document.getElementById('bookingModal');
-    const openBtn = document.getElementById('openBookingModalBtn');
-    const closeSpan = modal.querySelector('.close');
-    const form = document.getElementById('newBookingForm');
-    // Prefill nama dari currentCustomer
-    const nameField = document.getElementById('modalBookingName');
-    const dateField = document.getElementById('modalBookingDate');
-    const timeField = document.getElementById('modalBookingTime');
-    const guestsField = document.getElementById('modalGuests');
-    const serviceField = document.getElementById('modalServiceType');
-
-    function resetMinDate() {
-      const today = new Date().toISOString().slice(0,10);
-      dateField.setAttribute('min', today);
-    }
-
-    function openModal() {
-      if(currentCustomer) {
-        nameField.value = currentCustomer.name;
-        dateField.value = '';
-        timeField.value = '';
-        guestsField.value = '1';
-        serviceField.selectedIndex = 0;
-        resetMinDate();
-        modal.style.display = 'flex';
-      }
-    }
-    openBtn.addEventListener('click', openModal);
-    closeSpan.addEventListener('click', () => modal.style.display = 'none');
-    window.addEventListener('click', (e) => { if(e.target === modal) modal.style.display = 'none'; });
-
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const name = nameField.value.trim();
-      const date = dateField.value;
-      const time = timeField.value;
-      let guests = parseInt(guestsField.value,10);
-      const service = serviceField.value;
-      if(!name) { showToast('Nama wajib diisi', true); return; }
-      if(!date) { showToast('Pilih tanggal', true); return; }
-      if(!time) { showToast('Pilih waktu', true); return; }
-      if(isNaN(guests) || guests < 1) guests=1;
-      if(!isValidBookingDate(date)) { showToast('Tanggal tidak boleh sebelum hari ini', true); return; }
-      const newBooking = {
-        id: generateId(),
-        customerEmail: currentCustomer.email,
-        name: name,
-        date: date,
-        time: time,
-        guests: guests,
-        service: service,
-        createdAt: new Date().toISOString()
-      };
-      addBooking(newBooking);
-      renderBookingsTable();
-      renderDashboardStats();
-      modal.style.display = 'none';
-      showToast(`Booking berhasil! Terima kasih ${name.split(' ')[0]}`, false);
-    });
-  }
-
-  // Clear all my bookings
-  document.getElementById('clearAllBookingsCustomerBtn')?.addEventListener('click', () => {
-    if(!currentCustomer) return;
-    const myBookings = getMyBookings(currentCustomer.email);
-    if(myBookings.length === 0) { showToast('Tidak ada booking', false); return; }
-    if(confirm(`Hapus SEMUA booking milik ${currentCustomer.name}?`)) {
-      deleteAllMyBookings(currentCustomer.email);
-      renderBookingsTable();
-      renderDashboardStats();
-      showToast('Semua booking telah dihapus', false);
-    }
-  });
-
-  // Tab switching logic
-  function initTabs() {
-    const btns = document.querySelectorAll('.nav-btn');
-    const tabs = {
-      dashboard: document.getElementById('dashboardTab'),
-      mybookings: document.getElementById('mybookingsTab')
-    };
-    btns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tabId = btn.getAttribute('data-tab');
-        if(!tabId) return;
-        btns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        Object.values(tabs).forEach(tab => tab.classList.remove('active'));
-        if(tabId === 'dashboard') tabs.dashboard.classList.add('active');
-        if(tabId === 'mybookings') { tabs.mybookings.classList.add('active'); renderBookingsTable(); }
-      });
-    });
-  }
-
-  // Logout
-  function logout() {
-    currentCustomer = null;
-    localStorage.removeItem("luxe_current_session");
-    document.getElementById('dashboardContainer').style.display = 'none';
-    document.getElementById('loginContainer').style.display = 'flex';
-    // reset login form
-    document.getElementById('loginFormCustomer').reset();
-  }
-
-  // Login success
-  function onLoginSuccess(customer) {
-    currentCustomer = customer;
-    localStorage.setItem("luxe_current_session", customer.email);
-    document.getElementById('loginContainer').style.display = 'none';
-    document.getElementById('dashboardContainer').style.display = 'block';
-    // update dashboard
-    renderDashboardStats();
-    renderBookingsTable();
-    // set default active tab
-    document.querySelector('.nav-btn[data-tab="dashboard"]').click();
-  }
-
-  // Auto login check
-  function tryAutoLogin() {
-    const savedEmail = localStorage.getItem("luxe_current_session");
-    if(!savedEmail) return false;
-    const customers = getCustomers();
-    const exist = customers.find(c => c.email.toLowerCase() === savedEmail.toLowerCase());
-    if(exist) {
-      onLoginSuccess(exist);
-      return true;
-    }
-    return false;
-  }
-
-  // Login form handler
-  const loginForm = document.getElementById('loginFormCustomer');
-  loginForm.addEventListener('submit', (e) => {
+  // Registrasi & Login
+  function handleRegister(e) {
     e.preventDefault();
-    const name = document.getElementById('loginName').value.trim();
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const phone = document.getElementById('regPhone').value.trim();
+    const password = document.getElementById('regPassword').value;
+    if(!name || !email || !password) { showToast('Data tidak lengkap', true); return; }
+    let users = getUsers();
+    if(users.find(u => u.email === email)) { showToast('Email sudah terdaftar', true); return; }
+    const newUser = { id: Date.now()+'-cust', email, password, name, role: 'customer', phone };
+    users.push(newUser);
+    saveUsers(users);
+    showToast('Registrasi berhasil! Silakan login.', false);
+    document.getElementById('showLoginBtn').click();
+  }
+
+  function handleLogin(e) {
+    e.preventDefault();
     const email = document.getElementById('loginEmail').value.trim();
-    const phone = document.getElementById('loginPhone').value.trim();
-    if(!name || !email) { showToast('Nama dan email wajib', true); return; }
-    if(!email.includes('@')) { showToast('Email tidak valid', true); return; }
-    const cust = registerOrLogin(name, email, phone);
-    if(cust) onLoginSuccess(cust);
-    else showToast('Gagal masuk', true);
-  });
-
-  // setup Modal & logout
-  document.getElementById('logoutBtnSidebar').addEventListener('click', logout);
-  
-  // init date picker min
-  function setGlobalMinDate() {
-    const dateInputModal = document.getElementById('modalBookingDate');
-    if(dateInputModal) {
-      const today = new Date().toISOString().slice(0,10);
-      dateInputModal.setAttribute('min', today);
-    }
-  }
-
-  // Run init
-  if(!tryAutoLogin()) {
-    document.getElementById('loginContainer').style.display = 'flex';
-    document.getElementById('dashboardContainer').style.display = 'none';
-  } else {
+    const pass = document.getElementById('loginPassword').value;
+    const users = getUsers();
+    const user = users.find(u => u.email === email && u.password === pass);
+    if(!user) { showToast('Email atau password salah', true); return; }
+    currentUser = user;
+    localStorage.setItem('luxe_session', JSON.stringify({ id: user.id, email: user.email, role: user.role }));
     document.getElementById('loginContainer').style.display = 'none';
-    document.getElementById('dashboardContainer').style.display = 'block';
+    document.getElementById('dashboardContainer').style.display = 'flex';
+    renderDashboardByRole();
   }
-  setupBookingModal();
-  initTabs();
-  setGlobalMinDate();
-  // tambahkan pengecekan untuk tombol clear bookings (refresh)
-  document.getElementById('clearAllBookingsCustomerBtn')?.addEventListener('click', () => {
-    if(currentCustomer && confirm('Hapus semua booking Anda?')) {
-      deleteAllMyBookings(currentCustomer.email);
-      renderBookingsTable();
-      renderDashboardStats();
-      showToast('Semua booking dihapus', false);
+
+  function logout() {
+    currentUser = null;
+    localStorage.removeItem('luxe_session');
+    document.getElementById('dashboardContainer').style.display = 'none';
+    document.getElementById('loginContainer').style.display = 'flex';
+  }
+
+  // ============================ RENDER SIDEBAR & TABS SESUAI ROLE ======================
+  function renderDashboardByRole() {
+    const sidebarDiv = document.getElementById('dynamicSidebar');
+    const mainDiv = document.getElementById('dynamicMainContent');
+    if(!currentUser) return;
+    const isAdmin = currentUser.role === 'admin';
+    const menuItems = isAdmin ? [
+      { id: 'admin_home', icon: 'fa-chart-line', label: 'Dashboard Hotel', tab: 'adminDashboard' },
+      { id: 'admin_rooms', icon: 'fa-bed', label: 'Kelola Kamar', tab: 'adminRooms' },
+      { id: 'admin_bookings', icon: 'fa-calendar-check', label: 'Semua Booking', tab: 'adminBookings' },
+      { id: 'admin_transactions', icon: 'fa-credit-card', label: 'Transaksi', tab: 'adminTransactions' }
+    ] : [
+      { id: 'cust_home', icon: 'fa-home', label: 'Dashboard', tab: 'customerDashboard' },
+      { id: 'cust_search', icon: 'fa-search', label: 'Cari & Booking Kamar', tab: 'customerSearch' },
+      { id: 'cust_mybookings', icon: 'fa-ticket-alt', label: 'Booking Saya', tab: 'customerMyBookings' }
+    ];
+    let sidebarHtml = `<h2><i class="fas fa-calendar-alt"></i> <span>LuxeBooking</span></h2><nav>`;
+    menuItems.forEach(item => {
+      sidebarHtml += `<button class="nav-btn" data-tab="${item.tab}"><i class="fas ${item.icon}"></i> <span>${item.label}</span></button>`;
+    });
+    sidebarHtml += `<button class="nav-btn" id="logoutBtnSidebar"><i class="fas fa-sign-out-alt"></i> <span>Keluar</span></button></nav>`;
+    sidebarDiv.innerHTML = sidebarHtml;
+    // konten awal
+    mainDiv.innerHTML = `<div id="tabContainer"></div>`;
+    // register tab container
+    const tabContainer = document.getElementById('tabContainer');
+    const tabs = {};
+    if(isAdmin){
+      tabs.adminDashboard = `<div class="tab-content" id="adminDashboardTab"><h1>🏨 Manajemen Hotel</h1><div id="adminStats"></div><div class="stat-card"><p>Selamat datang, Admin. Kelola kamar, booking, dan transaksi sesuai DFD Level 1.</p></div></div>`;
+      tabs.adminRooms = `<div class="tab-content" id="adminRoomsTab"><div class="tab-header"><h2>Data Kamar & Stok</h2><button id="addRoomBtn" class="btn-primary"><i class="fas fa-plus"></i> Tambah Tipe Kamar</button></div><div class="table-wrapper"><table id="roomsTableAdmin"><thead><tr><th>Tipe</th><th>Harga/malam</th><th>Stok</th><th>Aksi</th></tr></thead><tbody id="roomsTbody"></tbody></table></div></div>`;
+      tabs.adminBookings = `<div class="tab-content" id="adminBookingsTab"><div class="tab-header"><h2>Daftar Semua Booking</h2></div><div class="table-wrapper"><table id="allBookingsTable"><thead><tr><th>ID</th><th>Customer</th><th>Kamar</th><th>Cek-in</th><th>Cek-out</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="allBookingsBody"></tbody></table></div></div>`;
+      tabs.adminTransactions = `<div class="tab-content" id="adminTransactionsTab"><h2>Riwayat Transaksi Pembayaran</h2><div class="table-wrapper"><table id="transactionsTable"><thead><tr><th>ID Transaksi</th><th>Booking ID</th><th>Jumlah</th><th>Metode</th><th>Status</th><th>E-Voucher</th></tr></thead><tbody id="transactionsTbody"></tbody></table></div></div>`;
+    } else {
+      tabs.customerDashboard = `<div class="tab-content" id="customerDashboardTab"><h1>✨ Dashboard Saya</h1><div id="custStatsGrid" class="stats-grid"></div></div>`;
+      tabs.customerSearch = `<div class="tab-content" id="customerSearchTab"><h2><i class="fas fa-search"></i> Cari Ketersediaan Kamar</h2><div class="stats-grid" style="background:rgba(0,0,0,0.2); padding:1rem; border-radius:1.5rem;"><div class="form-group"><label>Tanggal Check-in</label><input type="date" id="searchCheckin"></div><div class="form-group"><label>Tanggal Check-out</label><input type="date" id="searchCheckout"></div><div class="form-group"><label>Tipe Kamar</label><select id="searchRoomType"><option value="">Semua</option></select></div><button id="doSearchRoomsBtn" class="btn-primary">Cari Kamar Tersedia</button></div><div id="searchResults" class="table-wrapper" style="margin-top:1.5rem;"><table><thead><tr><th>Tipe</th><th>Harga/malam</th><th>Stok</th><th>Aksi</th></tr></thead><tbody id="searchResultsBody"></tbody></table></div></div>`;
+      tabs.customerMyBookings = `<div class="tab-content" id="customerMyBookingsTab"><div class="tab-header"><h2>Booking Saya</h2></div><div class="table-wrapper"><table id="myBookingsTable"><thead><tr><th>ID</th><th>Kamar</th><th>Check-in</th><th>Check-out</th><th>Tamu</th><th>Total</th><th>Status Bayar</th><th>E-Voucher</th></tr></thead><tbody id="myBookingsBody"></tbody></table></div></div>`;
     }
-  });
+    for(let [id, content] of Object.entries(tabs)) {
+      let div = document.createElement('div');
+      div.innerHTML = content;
+      tabContainer.appendChild(div.firstElementChild);
+    }
+    // event nav & load data
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      if(btn.id === 'logoutBtnSidebar') btn.addEventListener('click', logout);
+      else {
+        const tabId = btn.getAttribute('data-tab');
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+          const target = document.getElementById(tabId+'Tab');
+          if(target) target.classList.add('active');
+          if(tabId === 'adminDashboard') loadAdminStats();
+          if(tabId === 'adminRooms') loadRoomsAdmin();
+          if(tabId === 'adminBookings') loadAllBookingsAdmin();
+          if(tabId === 'adminTransactions') loadTransactionsAdmin();
+          if(tabId === 'customerDashboard') loadCustomerStats();
+          if(tabId === 'customerMyBookings') loadCustomerBookings();
+          if(tabId === 'customerSearch') { populateRoomSelect(); attachSearchEvent(); }
+        });
+      }
+    });
+    // default aktif pertama
+    document.querySelector('.nav-btn').click();
+  }
+
+  // Customer Stats
+  function loadCustomerStats() {
+    const myBookings = getBookings().filter(b => b.customerEmail === currentUser.email);
+    const total = myBookings.length;
+    const paid = myBookings.filter(b => b.paymentStatus === 'paid').length;
+    document.getElementById('custStatsGrid').innerHTML = `<div class="stat-card"><i class="fas fa-calendar-week"></i><h3>${total}</h3><p>Total Booking</p></div><div class="stat-card"><i class="fas fa-check-circle"></i><h3>${paid}</h3><p>Lunas</p></div>`;
+  }
+  function loadCustomerBookings() {
+    const myBookings = getBookings().filter(b => b.customerEmail === currentUser.email);
+    const tbody = document.getElementById('myBookingsBody');
+    if(!tbody) return;
+    if(myBookings.length===0) { tbody.innerHTML='<tr><td colspan="8">Belum ada booking</td></tr>'; return; }
+    tbody.innerHTML = myBookings.map(b => `<tr><td>${b.id.slice(-6)}</td><td>${b.roomType}</td><td>${b.checkinDate}</td><td>${b.checkoutDate}</td><td>${b.guests}</td><td>Rp ${b.totalPrice.toLocaleString()}</td><td>${b.paymentStatus}</td><td>${b.e_voucher || '-'}</td></tr>`).join('');
+  }
+  function populateRoomSelect() { const sel = document.getElementById('searchRoomType'); if(sel) { sel.innerHTML = '<option value="">Semua</option>'+getRooms().map(r=>`<option value="${r.type}">${r.type}</option>`).join(''); } }
+  function attachSearchEvent() {
+    const btn = document.getElementById('doSearchRoomsBtn');
+    if(!btn) return;
+    btn.onclick = () => {
+      const checkin = document.getElementById('searchCheckin').value;
+      const checkout = document.getElementById('searchCheckout').value;
+      const roomType = document.getElementById('searchRoomType').value;
+      if(!checkin || !checkout) { showToast('Pilih tanggal check-in/out', true); return; }
+      if(new Date(checkin) >= new Date(checkout)) { showToast('Check-out harus setelah check-in', true); return; }
+      let availableRooms = getRooms().filter(r => (roomType ? r.type === roomType : true) && r.stock > 0);
+      availableRooms = availableRooms.filter(r => isRoomAvailable(r.id, checkin, checkout));
+      const tbody = document.getElementById('searchResultsBody');
+      if(availableRooms.length===0) tbody.innerHTML='<tr><td colspan="4">Tidak ada kamar tersedia</td></tr>';
+      else tbody.innerHTML = availableRooms.map(r => `<tr><td>${r.type}</td><td>Rp ${r.pricePerNight.toLocaleString()}</td><td>${r.stock}</td><td><button class="btn-primary book-room-btn" data-room='${JSON.stringify(r)}' data-checkin="${checkin}" data-checkout="${checkout}">Booking Sekarang</button></td></tr>`).join('');
+      document.querySelectorAll('.book-room-btn').forEach(btn => btn.addEventListener('click', (e) => {
+        const roomData = JSON.parse(btn.getAttribute('data-room'));
+        const cin = btn.getAttribute('data-checkin');
+        const cout = btn.getAttribute('data-checkout');
+        openPaymentModal(roomData, cin, cout);
+      }));
+    };
+  }
+  function openPaymentModal(room, checkin, checkout) {
+    const nights = Math.ceil((new Date(checkout) - new Date(checkin))/(1000*3600*24));
+    const total = nights * room.pricePerNight;
+    const metode = prompt('Pilih metode pembayaran (Kartu Kredit / Transfer Bank):', 'Kartu Kredit');
+    if(!metode) return;
+    const bookingId = 'BK'+Date.now()+'-'+Math.floor(Math.random()*1000);
+    const newBooking = { id: bookingId, customerEmail: currentUser.email, customerName: currentUser.name, roomId: room.id, roomType: room.type, checkinDate: checkin, checkoutDate: checkout, guests: 1, totalPrice: total, paymentStatus: 'pending', metodePembayaran: metode, e_voucher: null, createdAt: new Date().toISOString() };
+    let bookings = getBookings();
+    bookings.push(newBooking);
+    saveBookings(bookings);
+    // Simulasi Payment Gateway Callback
+    showToast(`Proses pembayaran Rp ${total.toLocaleString()} via ${metode}...`, false);
+    setTimeout(() => {
+      let updatedBookings = getBookings();
+      const idx = updatedBookings.findIndex(b => b.id === bookingId);
+      if(idx!==-1) {
+        updatedBookings[idx].paymentStatus = 'paid';
+        const voucher = `EV-${bookingId}`;
+        updatedBookings[idx].e_voucher = voucher;
+        saveBookings(updatedBookings);
+        let trans = getTransactions();
+        trans.push({ id: 'TRX'+Date.now(), bookingId, amount: total, method: metode, status: 'SUCCESS', e_voucher: voucher, date: new Date().toISOString() });
+        saveTransactions(trans);
+        showToast(`Pembayaran berhasil! E-Voucher: ${voucher}`, false);
+        loadCustomerBookings();
+      }
+    }, 1500);
+  }
+  // ADMIN FUNCTIONS
+  function loadAdminStats() { document.getElementById('adminStats').innerHTML = `<div class="stats-grid"><div class="stat-card"><i class="fas fa-bed"></i><h3>${getRooms().length}</h3><p>Tipe Kamar</p></div><div class="stat-card"><i class="fas fa-calendar"></i><h3>${getBookings().length}</h3><p>Total Booking</p></div></div>`; }
+  function loadRoomsAdmin() {
+    const rooms = getRooms();
+    const tbody = document.getElementById('roomsTbody');
+    tbody.innerHTML = rooms.map(r => `<tr><td>${r.type}</td><td><input type="number" id="price-${r.id}" value="${r.pricePerNight}" step="10000" class="form-control" style="background:#0f172a;width:120px;"></td><td><input type="number" id="stock-${r.id}" value="${r.stock}" min="0" style="width:80px;"></td><td><button class="btn-primary update-room" data-id="${r.id}">Update</button></td></tr>`).join('');
+    document.querySelectorAll('.update-room').forEach(btn => btn.addEventListener('click', (e) => {
+      const id = btn.getAttribute('data-id');
+      let roomsArr = getRooms();
+      const idx = roomsArr.findIndex(r=> r.id === id);
+      if(idx!==-1) {
+        roomsArr[idx].pricePerNight = parseInt(document.getElementById(`price-${id}`).value);
+        roomsArr[idx].stock = parseInt(document.getElementById(`stock-${id}`).value);
+        saveRooms(roomsArr);
+        showToast('Kamar terupdate', false);
+      }
+    }));
+    document.getElementById('addRoomBtn')?.addEventListener('click', () => {
+      let newType = prompt('Nama tipe kamar baru');
+      let price = parseInt(prompt('Harga per malam'));
+      if(newType && price) {
+        let roomsArr = getRooms();
+        roomsArr.push({ id: 'room_'+Date.now(), type: newType, pricePerNight: price, stock: 5, description: '' });
+        saveRooms(roomsArr);
+        loadRoomsAdmin();
+      }
+    });
+  }
+  function loadAllBookingsAdmin() {
+    const all = getBookings();
+    const tbody = document.getElementById('allBookingsBody');
+    tbody.innerHTML = all.map(b => `<tr><td>${b.id.slice(-6)}</td><td>${b.customerName}</td><td>${b.roomType}</td><td>${b.checkinDate}</td><td>${b.checkoutDate}</td><td>Rp ${b.totalPrice.toLocaleString()}</td><td>${b.paymentStatus}</td><td><button class="btn-danger delete-admin-booking" data-id="${b.id}">Batalkan</button></td></tr>`).join('');
+    document.querySelectorAll('.delete-admin-booking').forEach(btn => btn.addEventListener('click', () => { if(confirm('Batalkan booking?')) { let bk = getBookings().filter(b => b.id !== btn.getAttribute('data-id')); saveBookings(bk); loadAllBookingsAdmin(); loadAdminStats(); showToast('Booking dibatalkan', false); } }));
+  }
+  function loadTransactionsAdmin() {
+    const trans = getTransactions();
+    const tbody = document.getElementById('transactionsTbody');
+    tbody.innerHTML = trans.map(t => `<tr><td>${t.id}</td><td>${t.bookingId}</td><td>Rp ${t.amount.toLocaleString()}</td><td>${t.method}</td><td>${t.status}</td><td>${t.e_voucher}</td></tr>`).join('');
+  }
+  // Event listener Login/Register
+  window.onload = () => {
+    initData();
+    const session = localStorage.getItem('luxe_session');
+    if(session) {
+      let ses = JSON.parse(session);
+      const users = getUsers();
+      const found = users.find(u => u.id === ses.id);
+      if(found) { currentUser = found; document.getElementById('loginContainer').style.display = 'none'; document.getElementById('dashboardContainer').style.display = 'flex'; renderDashboardByRole(); }
+      else { localStorage.removeItem('luxe_session'); }
+    }
+    document.getElementById('showLoginBtn').addEventListener('click', () => { document.getElementById('loginPanel').style.display='block'; document.getElementById('registerPanel').style.display='none'; });
+    document.getElementById('showRegisterBtn').addEventListener('click', () => { document.getElementById('loginPanel').style.display='none'; document.getElementById('registerPanel').style.display='block'; });
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+    document.getElementById('registerForm').addEventListener('submit', handleRegister);
+    if(!currentUser) { document.getElementById('loginContainer').style.display = 'flex'; document.getElementById('dashboardContainer').style.display = 'none'; }
+  };
 </script>
 </body>
 </html>
