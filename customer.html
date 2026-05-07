@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Customer Booking System | Pesan Layanan Anda</title>
+  <!-- Google Fonts + Tailwind + Font Awesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #f3f4fc 0%, #e9eef5 100%);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(2px);
+      border-radius: 2rem;
+      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0,0,0,0.02);
+      transition: all 0.2s ease;
+    }
+    .input-focus:focus {
+      border-color: #3b82f6;
+      ring: 2px solid #3b82f6;
+      outline: none;
+    }
+    .booking-item {
+      transition: all 0.2s;
+      border-left: 4px solid transparent;
+    }
+    .booking-item:hover {
+      background-color: #f9fafc;
+      transform: translateX(4px);
+      border-left-color: #3b82f6;
+    }
+    .btn-submit {
+      background: linear-gradient(95deg, #2563eb, #1e40af);
+      transition: all 0.2s ease;
+    }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 20px -8px rgba(37, 99, 235, 0.4);
+    }
+    .toast-message {
+      animation: fadeSlide 2.5s ease forwards;
+    }
+    @keyframes fadeSlide {
+      0% { opacity: 0; transform: translateY(1rem); }
+      15% { opacity: 1; transform: translateY(0); }
+      85% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-0.5rem); visibility: hidden; }
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #e2e8f0;
+      border-radius: 12px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body class="antialiased p-4 md:p-8">
+
+  <div class="max-w-6xl mx-auto">
+    <!-- Header Section -->
+    <div class="text-center mb-8 md:mb-10">
+      <div class="inline-flex items-center justify-center bg-white/60 backdrop-blur-sm rounded-full px-5 py-2 shadow-sm mb-4">
+        <i class="fas fa-calendar-check text-blue-600 mr-2 text-lg"></i>
+        <span class="text-sm font-medium text-gray-700">Booking langsung oleh pelanggan</span>
+      </div>
+      <h1 class="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Pesan Layanan ✨</h1>
+      <p class="text-gray-500 mt-2 max-w-xl mx-auto">Isi data di bawah, booking Anda akan langsung masuk & terdaftar secara instan.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+      <!-- FORM SECTION (kiri/lebih lebar di desktop) -->
+      <div class="lg:col-span-2">
+        <div class="glass-card p-6 md:p-7 border border-white/40">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="bg-blue-100 p-2 rounded-xl">
+              <i class="fas fa-pen-alt text-blue-600 text-lg"></i>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-800">Form Booking Baru</h2>
+          </div>
+
+          <form id="bookingForm" class="space-y-5">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                <i class="fas fa-user text-gray-400 mr-1 text-xs"></i> Nama Lengkap
+              </label>
+              <input type="text" id="customerName" required 
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-200 transition outline-none"
+                placeholder="Contoh: Anita Wijaya">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  <i class="fas fa-calendar-alt text-gray-400 mr-1"></i> Tanggal
+                </label>
+                <input type="date" id="bookingDate" required
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  <i class="fas fa-clock text-gray-400 mr-1"></i> Waktu
+                </label>
+                <input type="time" id="bookingTime" required
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  <i class="fas fa-users text-gray-400 mr-1"></i> Jumlah Tamu
+                </label>
+                <input type="number" id="guests" min="1" value="1" required
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  <i class="fas fa-tag text-gray-400 mr-1"></i> Tipe Layanan
+                </label>
+                <select id="serviceType" 
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none">
+                  <option value="Meja Restoran">🍽️ Meja Restoran</option>
+                  <option value="Kamar Hotel">🏨 Kamar Hotel</option>
+                  <option value="Spa & Relaksasi">💆 Spa & Relaksasi</option>
+                  <option value="Meeting Room">📋 Meeting Room</option>
+                  <option value="Konsultasi">🎧 Konsultasi</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <button type="submit" 
+                class="btn-submit w-full text-white font-semibold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 transition">
+                <i class="fas fa-plus-circle text-white"></i> Buat Booking Sekarang
+              </button>
+            </div>
+          </form>
+
+          <div class="mt-5 pt-3 text-center text-xs text-gray-400 border-t border-gray-100">
+            <i class="fas fa-shield-alt mr-1"></i> Booking langsung tersimpan & dapat dikelola
+          </div>
+        </div>
+      </div>
+
+      <!-- DAFTAR BOOKING (kanan / area tampil booking masuk) -->
+      <div class="lg:col-span-3">
+        <div class="glass-card p-6 md:p-7 border border-white/40 h-full flex flex-col">
+          <div class="flex justify-between items-center flex-wrap gap-3 mb-5">
+            <div class="flex items-center gap-3">
+              <div class="bg-emerald-100 p-2 rounded-xl">
+                <i class="fas fa-calendar-week text-emerald-700 text-lg"></i>
+              </div>
+              <h2 class="text-xl font-semibold text-gray-800">Booking Anda</h2>
+            </div>
+            <span id="bookingCounter" class="bg-gray-100 text-gray-700 text-sm font-medium px-3 py-1 rounded-full">0 booking</span>
+          </div>
+
+          <!-- area list booking -->
+          <div id="bookingsListContainer" class="flex-1 max-h-[450px] overflow-y-auto pr-1 space-y-3">
+            <!-- dynamic bookings will appear here -->
+            <div class="text-center py-12 text-gray-400 italic flex flex-col items-center gap-2">
+              <i class="fas fa-inbox text-3xl opacity-60"></i>
+              <p>Belum ada booking. Silakan isi form di samping untuk mulai!</p>
+            </div>
+          </div>
+
+          <!-- optional tombol hapus semua (clean) -->
+          <div class="mt-5 pt-3 border-t border-gray-100 flex justify-end">
+            <button id="clearAllBookingsBtn" class="text-sm text-gray-500 hover:text-red-600 transition flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-red-50">
+              <i class="fas fa-trash-alt text-xs"></i> Hapus Semua Booking
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notifikasi -->
+  <div id="toastNotification" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-full shadow-xl text-sm font-medium flex items-center gap-2 z-50 pointer-events-none opacity-0 transition-opacity duration-300" style="visibility: hidden;">
+    <i class="fas fa-check-circle text-emerald-400"></i>
+    <span id="toastMessage">Booking berhasil!</span>
+  </div>
+
+  <script>
+    // ---------- DATA & GLOBAL ----------
+    let bookings = [];          // array of booking objects
+    const STORAGE_KEY = "customer_booking_system";
+
+    // DOM elements
+    const form = document.getElementById('bookingForm');
+    const nameInput = document.getElementById('customerName');
+    const dateInput = document.getElementById('bookingDate');
+    const timeInput = document.getElementById('bookingTime');
+    const guestsInput = document.getElementById('guests');
+    const serviceSelect = document.getElementById('serviceType');
+    const bookingsContainer = document.getElementById('bookingsListContainer');
+    const bookingCounterSpan = document.getElementById('bookingCounter');
+    const clearAllBtn = document.getElementById('clearAllBookingsBtn');
+    const toast = document.getElementById('toastNotification');
+    const toastMsgSpan = document.getElementById('toastMessage');
+
+    // Helper: show toast notifikasi
+    function showToast(message, isError = false) {
+      toastMsgSpan.innerText = message;
+      toast.style.visibility = "visible";
+      toast.style.opacity = "1";
+      if (isError) {
+        toast.classList.remove("bg-gray-900");
+        toast.classList.add("bg-red-700");
+        toastMsgSpan.innerHTML = `<i class="fas fa-exclamation-triangle mr-1"></i> ${message}`;
+      } else {
+        toast.classList.remove("bg-red-700");
+        toast.classList.add("bg-gray-900");
+        toastMsgSpan.innerHTML = `<i class="fas fa-check-circle mr-1 text-emerald-300"></i> ${message}`;
+      }
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        setTimeout(() => {
+          toast.style.visibility = "hidden";
+          toast.classList.remove("bg-red-700");
+          toast.classList.add("bg-gray-900");
+        }, 300);
+      }, 2500);
+    }
+
+    // escape HTML untuk keamanan XSS
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // LocalStorage: simpan bookings
+    function saveBookingsToLocal() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+    }
+
+    // load dari localstorage
+    function loadBookingsFromLocal() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          bookings = JSON.parse(stored);
+          // validasi tiap object memiliki field penting
+          if (!Array.isArray(bookings)) bookings = [];
+        } catch(e) { bookings = []; }
+      } else {
+        bookings = [];   // clean start, tanpa contoh dummy biar murni dari customer
+      }
+      // urutkan berdasarkan tanggal + waktu (terdekat dulu)
+      sortBookingsByDateTime();
+      renderBookingsList();
+    }
+
+    // Sorting bookings by date & time (ascending)
+    function sortBookingsByDateTime() {
+      bookings.sort((a, b) => {
+        const dateTimeA = `${a.date}T${a.time || "00:00"}`;
+        const dateTimeB = `${b.date}T${b.time || "00:00"}`;
+        return new Date(dateTimeA) - new Date(dateTimeB);
+      });
+    }
+
+    // Update tampilan list booking
+    function renderBookingsList() {
+      if (!bookingsContainer) return;
+
+      if (bookings.length === 0) {
+        bookingsContainer.innerHTML = `
+          <div class="text-center py-12 text-gray-400 italic flex flex-col items-center gap-2">
+            <i class="fas fa-calendar-times text-3xl opacity-60"></i>
+            <p>Belum ada booking. Yuk buat booking baru!</p>
+            <p class="text-xs">Form di samping siap untuk Anda</p>
+          </div>
+        `;
+        bookingCounterSpan.innerText = `0 booking`;
+        return;
+      }
+
+      // Update counter
+      const totalBookings = bookings.length;
+      bookingCounterSpan.innerText = `${totalBookings} ${totalBookings === 1 ? 'booking' : 'booking'}`;
+
+      // Generate list items dengan tampilan card
+      let html = '';
+      // bookings sudah terurut
+      bookings.forEach(booking => {
+        const safeName = escapeHtml(booking.name);
+        const safeDate = escapeHtml(booking.date);
+        const safeTime = escapeHtml(booking.time);
+        const safeGuests = escapeHtml(booking.guests.toString());
+        const safeService = escapeHtml(booking.service);
+        const bookingId = booking.id;
+
+        // opsional format tanggal lebih rapi
+        let displayDate = safeDate;
+        if (safeDate && safeDate.length === 10) {
+          const [year, month, day] = safeDate.split('-');
+          displayDate = `${day}/${month}/${year}`;
+        }
+
+        html += `
+          <div class="booking-item bg-white/80 rounded-xl p-4 shadow-sm border border-gray-100 flex flex-wrap justify-between items-center transition">
+            <div class="flex-1 min-w-[180px]">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-bold text-gray-800 text-base">${safeName}</span>
+                <span class="bg-blue-50 text-blue-700 text-xs font-medium px-2 py-0.5 rounded-full"><i class="fas fa-concierge-bell mr-1"></i>${safeService}</span>
+              </div>
+              <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-gray-600">
+                <span><i class="far fa-calendar-alt mr-1 text-gray-400"></i> ${displayDate}</span>
+                <span><i class="far fa-clock mr-1 text-gray-400"></i> ${safeTime}</span>
+                <span><i class="fas fa-user-friends mr-1 text-gray-400"></i> ${safeGuests} tamu</span>
+              </div>
+            </div>
+            <div class="mt-3 sm:mt-0">
+              <button class="delete-booking-btn text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 transition rounded-full p-2 px-3 text-sm font-medium flex items-center gap-1" data-id="${bookingId}">
+                <i class="fas fa-trash-alt text-xs"></i> Batalkan
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      bookingsContainer.innerHTML = html;
+
+      // attach event listener ke setiap tombol hapus (delegation tidak perlu karena sudah di container, tapi lebih aman menggunakan event delegation)
+      // Lebih baik gunakan event delegation pada parent bookingsContainer
+      // Namun karena kita sudah mengganti innerHTML, event listener akan dihandle delegation dari atas.
+    }
+
+    // Event delegation untuk tombol delete (hapus booking)
+    function handleDeleteBooking(event) {
+      const target = event.target.closest('.delete-booking-btn');
+      if (!target) return;
+      const bookingId = parseInt(target.getAttribute('data-id'));
+      if (!bookingId && bookingId !== 0) return;
+      
+      // konfirmasi hapus
+      if (confirm("Batalkan booking ini? Data akan dihapus.")) {
+        const index = bookings.findIndex(b => b.id === bookingId);
+        if (index !== -1) {
+          bookings.splice(index, 1);
+          saveBookingsToLocal();
+          sortBookingsByDateTime();
+          renderBookingsList();
+          showToast("Booking berhasil dibatalkan ✖️", false);
+        } else {
+          showToast("Booking tidak ditemukan", true);
+        }
+      }
+    }
+
+    // Hapus semua booking
+    function clearAllBookings() {
+      if (bookings.length === 0) {
+        showToast("Tidak ada booking untuk dihapus", false);
+        return;
+      }
+      if (confirm("⚠️ Hapus SEMUA booking? Tindakan ini tidak bisa dibatalkan.")) {
+        bookings = [];
+        saveBookingsToLocal();
+        renderBookingsList();
+        showToast("Semua booking telah dihapus", false);
+      }
+    }
+
+    // Validasi date tidak boleh sebelum hari ini
+    function isValidBookingDate(dateString) {
+      if (!dateString) return false;
+      const selectedDate = new Date(dateString);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return selectedDate >= today;
+    }
+
+    // Menambah booking baru dari form
+    function addBookingFromForm(event) {
+      event.preventDefault();
+
+      // Ambil nilai
+      const name = nameInput.value.trim();
+      const date = dateInput.value;
+      const time = timeInput.value;
+      let guests = parseInt(guestsInput.value, 10);
+      const service = serviceSelect.value;
+
+      // Validasi komplit
+      if (!name) {
+        showToast("Nama lengkap harus diisi", true);
+        nameInput.focus();
+        return;
+      }
+      if (!date) {
+        showToast("Pilih tanggal booking", true);
+        dateInput.focus();
+        return;
+      }
+      if (!time) {
+        showToast("Pilih waktu booking", true);
+        timeInput.focus();
+        return;
+      }
+      if (isNaN(guests) || guests < 1) {
+        showToast("Jumlah tamu minimal 1 orang", true);
+        guestsInput.value = 1;
+        guests = 1;
+      }
+      
+      // validasi date masa lalu
+      if (!isValidBookingDate(date)) {
+        showToast("Tanggal booking tidak boleh kemarin atau sebelumnya. Pilih hari ini / mendatang.", true);
+        return;
+      }
+
+      // Cek waktu sedikit logic opsional (tidak wajib)
+      if (time === "") {
+        showToast("Format waktu tidak valid", true);
+        return;
+      }
+
+      // buat id unik
+      const newId = Date.now();
+      const newBooking = {
+        id: newId,
+        name: name,
+        date: date,
+        time: time,
+        guests: guests,
+        service: service,
+        createdAt: new Date().toISOString()
+      };
+
+      bookings.push(newBooking);
+      sortBookingsByDateTime();
+      saveBookingsToLocal();
+      renderBookingsList();
+
+      // reset form kecuali default yang diinginkan
+      form.reset();
+      // set kembali default value untuk guests ke 1, service ke default pertama
+      guestsInput.value = "1";
+      serviceSelect.selectedIndex = 0;
+      // untuk keamanan min date tetap dijalankan (setMinDate akan aktif di load)
+      setMinDateForPicker();
+
+      showToast(`Booking berhasil! Terima kasih ${name.split(' ')[0]} 🎉`, false);
+      nameInput.focus();
+    }
+
+    // Set atribut min pada date picker supaya tidak bisa pilih masa lalu
+    function setMinDateForPicker() {
+      if (dateInput) {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const minDate = `${yyyy}-${mm}-${dd}`;
+        dateInput.setAttribute('min', minDate);
+        // optional jika value kosong tidak masalah
+        if (!dateInput.value) {
+          // tidak auto-set, biarkan user pilih
+        }
+      }
+    }
+
+    // Inisialisasi semua event & data saat load
+    function init() {
+      loadBookingsFromLocal();   // load data, langsung render
+      setMinDateForPicker();
+      form.addEventListener('submit', addBookingFromForm);
+      
+      // Event delegation untuk delete (karena booking list container dinamis)
+      bookingsContainer.addEventListener('click', handleDeleteBooking);
+      
+      clearAllBtn.addEventListener('click', clearAllBookings);
+      
+      // validasi tambahan: jika input date berubah, boleh
+      dateInput.addEventListener('change', function() {
+        const selectedDate = dateInput.value;
+        if (selectedDate && !isValidBookingDate(selectedDate)) {
+          showToast("Tanggal tidak boleh sebelum hari ini", true);
+          dateInput.value = "";
+        }
+      });
+    }
+
+    // panggil init setelah DOM ready
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
