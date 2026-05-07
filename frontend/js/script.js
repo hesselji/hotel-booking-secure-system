@@ -1,6 +1,15 @@
 // ==================== KONFIGURASI ====================
 const API_URL = '../backend/api.php';
 
+// ==================== FORMAT RUPIAH ====================
+function formatRupiah(amount) {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(amount);
+}
+
 // Fungsi umum untuk memanggil API
 async function apiCall(action, method = 'POST', body = null) {
     const url = `${API_URL}?action=${action}`;
@@ -83,7 +92,7 @@ if (window.location.pathname.includes('dashboard.html')) {
             grid.innerHTML = `
                 <div class="stat-card"><i class="fas fa-calendar-check"></i><h3>${stats.data.totalBookings}</h3><p>Total Bookings</p></div>
                 <div class="stat-card"><i class="fas fa-door-open"></i><h3>${stats.data.totalRooms}</h3><p>Rooms</p></div>
-                <div class="stat-card"><i class="fas fa-dollar-sign"></i><h3>$${stats.data.revenue}</h3><p>Revenue</p></div>
+                <div class="stat-card"><i class="fas fa-money-bill-wave"></i><h3>${formatRupiah(stats.data.revenue)}</h3><p>Revenue</p></div>
                 <div class="stat-card"><i class="fas fa-bed"></i><h3>${stats.data.availableRooms}</h3><p>Available Rooms</p></div>
             `;
         } else {
@@ -104,7 +113,7 @@ if (window.location.pathname.includes('dashboard.html')) {
                     <td>${escapeHtml(b.room_number)} (${escapeHtml(b.room_type)})</td>
                     <td>${b.check_in_date}</td>
                     <td>${b.check_out_date}</td>
-                    <td>$${parseFloat(b.total_price).toFixed(2)}</td>
+                    <td>${formatRupiah(b.total_price)}</td>
                     <td>
                         <select class="status-select" data-id="${b.id}">
                             <option value="confirmed" ${b.booking_status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
@@ -164,7 +173,7 @@ if (window.location.pathname.includes('dashboard.html')) {
                     <td>${r.id}</td>
                     <td>${escapeHtml(r.room_number)}</td>
                     <td>${escapeHtml(r.room_type)}</td>
-                    <td>$${parseFloat(r.price_per_night).toFixed(2)}</td>
+                    <td>${formatRupiah(r.price_per_night)}</td>
                     <td><span class="room-status ${r.status}">${r.status}</span></td>
                     <td>${escapeHtml(r.description || '-')}</td>
                     <td>
@@ -217,7 +226,7 @@ if (window.location.pathname.includes('dashboard.html')) {
             <div class="form-group"><label>Customer Name</label><input type="text" id="cust_name" required></div>
             <div class="form-group"><label>Email</label><input type="email" id="cust_email" required></div>
             <div class="form-group"><label>Phone</label><input type="text" id="cust_phone" required></div>
-            <div class="form-group"><label>Room</label><select id="room_id">${rooms.map(r => `<option value="${r.id}">${escapeHtml(r.room_number)} - ${escapeHtml(r.room_type)} ($${r.price_per_night}/night)</option>`).join('')}</select></div>
+            <div class="form-group"><label>Room</label><select id="room_id">${rooms.map(r => `<option value="${r.id}"><option value="${r.id}">${escapeHtml(r.room_number)} - ${escapeHtml(r.room_type)} (${formatRupiah(r.price_per_night)}/malam)</option></option>`).join('')}</select></div>
             <div class="form-group"><label>Check In</label><input type="date" id="check_in" required></div>
             <div class="form-group"><label>Check Out</label><input type="date" id="check_out" required></div>
             <button type="submit" class="btn-primary">Create Booking</button>
@@ -253,7 +262,7 @@ if (window.location.pathname.includes('dashboard.html')) {
             <input type="hidden" id="room_id" value="${room ? room.id : ''}">
             <div class="form-group"><label>Room Number</label><input type="text" id="room_number" value="${room ? escapeHtml(room.room_number) : ''}" required></div>
             <div class="form-group"><label>Room Type</label><select id="room_type"><option ${room && room.room_type === 'Single' ? 'selected' : ''}>Single</option><option ${room && room.room_type === 'Double' ? 'selected' : ''}>Double</option><option ${room && room.room_type === 'Suite' ? 'selected' : ''}>Suite</option></select></div>
-            <div class="form-group"><label>Price per Night ($)</label><input type="number" step="0.01" id="price_per_night" value="${room ? room.price_per_night : ''}" required></div>
+            <div class="form-group"><label>Harga per Malam (Rp)</label><input type="number" step="0.01" id="price_per_night" value="${room ? room.price_per_night : ''}" required></div>
             <div class="form-group"><label>Status</label><select id="status"><option value="available" ${room && room.status === 'available' ? 'selected' : ''}>Available</option><option value="booked" ${room && room.status === 'booked' ? 'selected' : ''}>Booked</option><option value="maintenance" ${room && room.status === 'maintenance' ? 'selected' : ''}>Maintenance</option></select></div>
             <div class="form-group"><label>Description</label><textarea id="description">${room ? escapeHtml(room.description || '') : ''}</textarea></div>
             <button type="submit" class="btn-primary">${room ? 'Update Room' : 'Add Room'}</button>
