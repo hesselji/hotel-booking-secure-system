@@ -3,187 +3,413 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>LuxeBooking · Customer Only</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>LuxeBooking · Customer Panel</title>
+  <!-- Google Fonts & Font Awesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
       font-family: 'Inter', sans-serif;
-      background: radial-gradient(circle at 10% 20%, #0f2027, #203a43);
+      background: radial-gradient(circle at 10% 20%, rgba(15, 32, 39, 1) 0%, rgba(32, 58, 67, 1) 100%);
       color: #eef2ff;
-      min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
     }
-    /* Layout utama customer */
-    .customer-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-    /* Header & Nav */
-    .navbar {
+
+    /* Dashboard Layout */
+    .dashboard-container {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      background: rgba(18, 25, 45, 0.6);
-      backdrop-filter: blur(12px);
-      border-radius: 2rem;
-      padding: 0.8rem 2rem;
-      margin-bottom: 2rem;
-      border: 1px solid rgba(255,140,50,0.3);
+      height: 100vh;
+      width: 100%;
+      backdrop-filter: blur(2px);
     }
-    .logo {
-      font-size: 1.5rem;
-      font-weight: 800;
+
+    /* ========= SIDEBAR MODERN ========= */
+    .sidebar {
+      width: 280px;
+      background: rgba(18, 25, 45, 0.7);
+      backdrop-filter: blur(16px);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      padding: 2rem 1.2rem;
+      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .sidebar h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
       background: linear-gradient(135deg, #f9d423, #ff8c32);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-    }
-    .nav-links {
-      display: flex;
-      gap: 1rem;
-    }
-    .nav-btn {
-      background: transparent;
-      border: none;
-      padding: 0.5rem 1.2rem;
-      border-radius: 2rem;
-      font-weight: 500;
-      color: #cbd5e6;
-      cursor: pointer;
-      transition: 0.2s;
-      font-size: 0.9rem;
-    }
-    .nav-btn.active {
-      background: linear-gradient(95deg, rgba(255,140,50,0.2), rgba(255,94,0,0.1));
-      color: #ffb347;
-    }
-    .nav-btn:hover {
-      background: rgba(255,255,255,0.1);
-    }
-    .user-info {
+      margin-bottom: 2.5rem;
       display: flex;
       align-items: center;
-      gap: 1rem;
-      background: rgba(0,0,0,0.3);
-      padding: 0.3rem 1rem;
-      border-radius: 2rem;
+      gap: 0.6rem;
+      letter-spacing: -0.3px;
     }
-    .btn-logout {
-      background: rgba(248,113,113,0.2);
+
+    .sidebar h2 i {
+      background: none;
+      -webkit-background-clip: unset;
+      color: #ff8c32;
+    }
+
+    .sidebar nav {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.03);
       border: none;
-      padding: 0.3rem 0.8rem;
-      border-radius: 2rem;
-      color: #f87171;
+      border-radius: 1.2rem;
+      padding: 0.85rem 1.2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      text-align: left;
+      color: #cbd5e6;
       cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      font-family: 'Inter', sans-serif;
     }
-    /* Cards */
+
+    .nav-btn i {
+      width: 24px;
+      font-size: 1.2rem;
+    }
+
+    .nav-btn.active {
+      background: linear-gradient(95deg, rgba(255, 140, 50, 0.2), rgba(255, 94, 0, 0.1));
+      color: #ffb347;
+      border-left: 3px solid #ff8c32;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .nav-btn:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      transform: translateX(5px);
+    }
+
+    #logoutBtnSidebar {
+      margin-top: auto;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1.2rem;
+      margin-top: 2rem;
+      color: #f87171;
+    }
+
+    #logoutBtnSidebar:hover {
+      background: rgba(248, 113, 113, 0.15);
+      color: #ff9e9e;
+    }
+
+    /* ========= MAIN CONTENT ========= */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 2rem 2rem 2rem 2rem;
+      scroll-behavior: smooth;
+    }
+
+    .main-content::-webkit-scrollbar {
+      width: 6px;
+    }
+    .main-content::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+    .main-content::-webkit-scrollbar-thumb {
+      background: #ff8c32;
+      border-radius: 10px;
+    }
+
+    /* Tab Content */
+    .tab-content {
+      display: none;
+      animation: fadeInUp 0.4s ease;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h1, .tab-header h2 {
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(120deg, #ffffff, #ffd6a5);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    /* Stats Cards */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
+
     .stat-card {
-      background: rgba(255,255,255,0.05);
-      backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
       border-radius: 1.5rem;
-      padding: 1.2rem;
-      text-align: center;
-      border: 1px solid rgba(255,255,255,0.1);
+      padding: 1.5rem;
+      transition: all 0.25s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     }
-    .stat-card i { font-size: 2rem; color: #ff8c32; }
-    .stat-card h3 { font-size: 2rem; margin-top: 0.5rem; }
-    .table-wrapper {
-      background: rgba(20,30,45,0.6);
-      border-radius: 1.5rem;
-      overflow-x: auto;
-      padding: 0.5rem;
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 140, 50, 0.5);
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
+
+    .stat-card i {
+      font-size: 2.2rem;
+      color: #ff8c32;
+      margin-bottom: 0.8rem;
     }
-    th, td {
-      padding: 0.9rem 1rem;
-      text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+
+    .stat-card h3 {
+      font-size: 2.3rem;
+      font-weight: 800;
+      margin: 0.5rem 0 0.2rem;
+      color: white;
     }
-    th { color: #ffd9b5; }
+
+    .stat-card p {
+      color: #cbd5e6;
+      font-weight: 500;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Table & Buttons */
+    .tab-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
     .btn-primary {
       background: linear-gradient(100deg, #ff8c32, #ff5e00);
       border: none;
-      padding: 0.5rem 1.2rem;
+      padding: 0.7rem 1.4rem;
       border-radius: 2rem;
       font-weight: 600;
+      font-size: 0.9rem;
       color: white;
       cursor: pointer;
-      transition: 0.2s;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 10px rgba(255, 94, 0, 0.3);
     }
+
+    .btn-primary:hover {
+      transform: scale(1.02);
+      background: linear-gradient(100deg, #ff9e4a, #ff7000);
+      box-shadow: 0 6px 14px rgba(255, 94, 0, 0.4);
+    }
+
     .btn-secondary {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid #ff8c32;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 140, 50, 0.5);
       padding: 0.5rem 1rem;
       border-radius: 2rem;
       color: #ffb347;
+      font-weight: 500;
       cursor: pointer;
+      transition: 0.2s;
     }
-    .form-group {
-      margin-bottom: 1rem;
+
+    .btn-secondary:hover {
+      background: rgba(255, 140, 50, 0.2);
     }
-    .form-group label {
-      display: block;
-      margin-bottom: 0.3rem;
+
+    .table-wrapper {
+      background: rgba(20, 30, 45, 0.6);
+      backdrop-filter: blur(8px);
+      border-radius: 1.5rem;
+      overflow-x: auto;
+      padding: 0.2rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
       font-size: 0.85rem;
     }
-    input, select {
-      width: 100%;
-      padding: 0.7rem;
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 1rem;
-      color: white;
+
+    th {
+      text-align: left;
+      padding: 1rem 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      color: #ffd9b5;
+      font-weight: 600;
     }
-    .login-card, .dashboard-card {
-      background: rgba(20,30,45,0.9);
+
+    td {
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+    }
+
+    tr:hover td {
+      background: rgba(255, 140, 50, 0.1);
+    }
+
+    .btn-danger {
+      background: rgba(220, 38, 38, 0.8);
+      border: none;
+      padding: 0.3rem 0.8rem;
+      border-radius: 2rem;
+      color: white;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+    .btn-success {
+      background: rgba(34, 197, 94, 0.8);
+      border: none;
+      padding: 0.3rem 0.8rem;
+      border-radius: 2rem;
+      color: white;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    /* LOGIN CARD */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 30% 20%, #0b1a22, #0f212e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      backdrop-filter: blur(4px);
+    }
+    .login-card {
+      background: rgba(20, 30, 45, 0.9);
       backdrop-filter: blur(16px);
       border-radius: 2rem;
+      width: 480px;
+      max-width: 90%;
       padding: 2rem;
-      max-width: 500px;
-      margin: 5rem auto;
-      text-align: center;
       border: 1px solid rgba(255,140,50,0.5);
+      box-shadow: 0 25px 40px rgba(0,0,0,0.5);
+      text-align: center;
     }
-    .toast {
+    .login-card i {
+      font-size: 3rem;
+      color: #ff8c32;
+      margin-bottom: 1rem;
+    }
+    .login-card h2 {
+      margin-bottom: 1.8rem;
+      font-weight: 700;
+    }
+    .login-card input {
+      background: #0f172a;
+      border: 1px solid #334155;
+      padding: 0.8rem;
+      border-radius: 1.2rem;
+      width: 100%;
+      margin-bottom: 1rem;
+      color: white;
+    }
+    .toast-custom {
       position: fixed;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       background: #1e293b;
       border-left: 5px solid #ff8c32;
-      padding: 0.8rem 1.5rem;
+      padding: 12px 24px;
       border-radius: 40px;
-      z-index: 1000;
+      color: white;
+      z-index: 3000;
+      font-weight: 500;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     }
-    .hidden { display: none; }
-    .tab-content { display: none; animation: fade 0.3s; }
-    .tab-content.active { display: block; }
-    @keyframes fade { from { opacity:0; } to { opacity:1; } }
     @media (max-width: 768px) {
-      .navbar { flex-direction: column; gap: 1rem; }
-      .customer-container { padding: 1rem; }
+      .sidebar {
+        width: 80px;
+        padding: 1rem 0.5rem;
+        align-items: center;
+      }
+      .sidebar h2 {
+        font-size: 0;
+        gap: 0;
+        justify-content: center;
+      }
+      .sidebar h2 i {
+        font-size: 1.8rem;
+      }
+      .nav-btn span {
+        display: none;
+      }
+      .nav-btn i {
+        margin: 0 auto;
+        width: auto;
+        font-size: 1.4rem;
+      }
+      .main-content {
+        padding: 1rem;
+      }
     }
   </style>
 </head>
 <body>
-<div id="app">
-  <!-- Login / Register Section -->
-  <div id="authSection" class="login-card">
-    <i class="fas fa-hotel" style="font-size: 3rem; color:#ff8c32;"></i>
-    <h2>LuxeBooking Hotel</h2>
-    <div style="display: flex; gap: 1rem; margin: 1rem 0;">
+
+<!-- LOGIN + REGISTER SECTION -->
+<div id="loginContainer" class="login-overlay">
+  <div class="login-card">
+    <i class="fas fa-hotel"></i>
+    <h2>LuxeBooking · Customer Access</h2>
+    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
       <button id="showLoginBtn" class="btn-primary" style="flex:1;">Login</button>
       <button id="showRegisterBtn" class="btn-secondary" style="flex:1;">Daftar</button>
     </div>
@@ -191,7 +417,7 @@
       <form id="loginForm">
         <input type="email" id="loginEmail" placeholder="Email" required>
         <input type="password" id="loginPassword" placeholder="Kata Sandi" required>
-        <button type="submit" class="btn-primary" style="width:100%; margin-top:1rem;">Masuk</button>
+        <button type="submit" class="btn-primary" style="width:100%;">Masuk ke Dashboard</button>
       </form>
     </div>
     <div id="registerPanel" style="display:none;">
@@ -200,146 +426,97 @@
         <input type="email" id="regEmail" placeholder="Email" required>
         <input type="tel" id="regPhone" placeholder="No. Telepon">
         <input type="password" id="regPassword" placeholder="Kata Sandi" required>
-        <button type="submit" class="btn-primary" style="width:100%; margin-top:1rem;">Buat Akun</button>
+        <button type="submit" class="btn-primary" style="width:100%;">Buat Akun</button>
       </form>
     </div>
+    <p style="font-size:0.7rem; margin-top:1rem;">Demo: customer@demo.com / pass123</p>
   </div>
+</div>
 
-  <!-- Dashboard Customer (setelah login) -->
-  <div id="dashboardSection" class="hidden">
-    <div class="customer-container">
-      <div class="navbar">
-        <div class="logo"><i class="fas fa-calendar-alt"></i> LuxeBooking</div>
-        <div class="nav-links">
-          <button class="nav-btn" data-tab="dashboard">Dashboard</button>
-          <button class="nav-btn" data-tab="search">Cari Kamar</button>
-          <button class="nav-btn" data-tab="mybookings">Booking Saya</button>
-        </div>
-        <div class="user-info">
-          <span id="userNameDisplay"></span>
-          <button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Keluar</button>
-        </div>
-      </div>
-
-      <!-- Tab Dashboard -->
-      <div id="dashboardTab" class="tab-content">
-        <h1>Dashboard Saya</h1>
-        <div id="custStats" class="stats-grid"></div>
-        <div class="stat-card"><i class="fas fa-info-circle"></i> <p>Selamat datang di sistem booking hotel. Cari kamar dan lakukan pemesanan dengan mudah.</p></div>
-      </div>
-
-      <!-- Tab Cari Kamar -->
-      <div id="searchTab" class="tab-content">
-        <h2><i class="fas fa-search"></i> Cari Ketersediaan Kamar</h2>
-        <div style="background:rgba(0,0,0,0.2); border-radius:1.5rem; padding:1.5rem; margin-bottom:1.5rem;">
-          <div class="form-group">
-            <label>Tanggal Check-in</label>
-            <input type="date" id="searchCheckin">
-          </div>
-          <div class="form-group">
-            <label>Tanggal Check-out</label>
-            <input type="date" id="searchCheckout">
-          </div>
-          <div class="form-group">
-            <label>Tipe Kamar</label>
-            <select id="searchRoomType"><option value="">Semua</option></select>
-          </div>
-          <button id="doSearchBtn" class="btn-primary"><i class="fas fa-hotel"></i> Cari Kamar Tersedia</button>
-        </div>
-        <div class="table-wrapper">
-          <table>
-            <thead><tr><th>Tipe Kamar</th><th>Harga/malam</th><th>Stok</th><th>Aksi</th></tr></thead>
-            <tbody id="searchResultsBody"><tr><td colspan="4">Silakan cari kamar dengan tanggal</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Tab Booking Saya -->
-      <div id="mybookingsTab" class="tab-content">
-        <h2><i class="fas fa-ticket-alt"></i> Riwayat Booking Saya</h2>
-        <div class="table-wrapper">
-          <table>
-            <thead><tr><th>ID</th><th>Kamar</th><th>Cek-in</th><th>Cek-out</th><th>Total</th><th>Status</th><th>E-Voucher</th></tr></thead>
-            <tbody id="myBookingsBody"><tr><td colspan="7">Belum ada booking</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+<!-- DASHBOARD (Customer only) -->
+<div id="dashboardContainer" style="display: none;">
+  <div class="dashboard-container">
+    <aside class="sidebar" id="customerSidebar">
+      <!-- sidebar akan diisi JS -->
+    </aside>
+    <main class="main-content" id="customerMainContent">
+      <!-- konten tab dinamis -->
+    </main>
   </div>
 </div>
 
 <script>
-  // STORAGE KEYS
-  const STORAGE_USERS = 'luxe_customers_only';
-  const STORAGE_ROOMS = 'luxe_rooms_master';
-  const STORAGE_BOOKINGS = 'luxe_bookings_cust';
-  const STORAGE_TRANSACTIONS = 'luxe_transactions_cust';
+  // ======================== DATA STORAGE (localStorage) ========================
+  const STORAGE = { users: 'luxe_users_customer', rooms: 'luxe_rooms_customer', bookings: 'luxe_bookings_customer', transactions: 'luxe_transactions_customer' };
   let currentUser = null;
 
-  // Data default
+  // Inisialisasi data default (hanya customer)
   function initData() {
-    if(!localStorage.getItem(STORAGE_USERS)) {
-      localStorage.setItem(STORAGE_USERS, JSON.stringify([
-        { id: 'cust1', email: 'customer@demo.com', password: 'pass123', name: 'Budi Santoso', phone: '08123456789', role: 'customer' }
-      ]));
+    if(!localStorage.getItem(STORAGE.users)) {
+      const defaultUsers = [
+        { id: 'cust_demo', email: 'customer@demo.com', password: 'pass123', name: 'Budi Santoso', role: 'customer', phone: '08123456789' }
+      ];
+      localStorage.setItem(STORAGE.users, JSON.stringify(defaultUsers));
     }
-    if(!localStorage.getItem(STORAGE_ROOMS)) {
-      localStorage.setItem(STORAGE_ROOMS, JSON.stringify([
-        { id: 'std', type: 'Standard Room', pricePerNight: 500000, stock: 10 },
-        { id: 'dlx', type: 'Deluxe Room', pricePerNight: 800000, stock: 6 },
-        { id: 'ste', type: 'Suite Room', pricePerNight: 1200000, stock: 3 }
-      ]));
+    if(!localStorage.getItem(STORAGE.rooms)) {
+      const rooms = [
+        { id: 'room_std', type: 'Standard Room', pricePerNight: 500000, stock: 10, description: 'Nyaman dengan AC & TV' },
+        { id: 'room_dlx', type: 'Deluxe Room', pricePerNight: 800000, stock: 6, description: 'Pemandangan kota, bathtub' },
+        { id: 'room_suite', type: 'Suite Room', pricePerNight: 1200000, stock: 3, description: 'VIP service, ruang tamu luas' }
+      ];
+      localStorage.setItem(STORAGE.rooms, JSON.stringify(rooms));
     }
-    if(!localStorage.getItem(STORAGE_BOOKINGS)) localStorage.setItem(STORAGE_BOOKINGS, JSON.stringify([]));
-    if(!localStorage.getItem(STORAGE_TRANSACTIONS)) localStorage.setItem(STORAGE_TRANSACTIONS, JSON.stringify([]));
+    if(!localStorage.getItem(STORAGE.bookings)) localStorage.setItem(STORAGE.bookings, JSON.stringify([]));
+    if(!localStorage.getItem(STORAGE.transactions)) localStorage.setItem(STORAGE.transactions, JSON.stringify([]));
   }
 
-  function getUsers() { return JSON.parse(localStorage.getItem(STORAGE_USERS)); }
-  function getRooms() { return JSON.parse(localStorage.getItem(STORAGE_ROOMS)); }
-  function getBookings() { return JSON.parse(localStorage.getItem(STORAGE_BOOKINGS)); }
-  function getTransactions() { return JSON.parse(localStorage.getItem(STORAGE_TRANSACTIONS)); }
-  function saveUsers(data) { localStorage.setItem(STORAGE_USERS, JSON.stringify(data)); }
-  function saveRooms(data) { localStorage.setItem(STORAGE_ROOMS, JSON.stringify(data)); }
-  function saveBookings(data) { localStorage.setItem(STORAGE_BOOKINGS, JSON.stringify(data)); }
-  function saveTransactions(data) { localStorage.setItem(STORAGE_TRANSACTIONS, JSON.stringify(data)); }
+  function getUsers() { return JSON.parse(localStorage.getItem(STORAGE.users)); }
+  function getRooms() { return JSON.parse(localStorage.getItem(STORAGE.rooms)); }
+  function getBookings() { return JSON.parse(localStorage.getItem(STORAGE.bookings)); }
+  function getTransactions() { return JSON.parse(localStorage.getItem(STORAGE.transactions)); }
+  function saveUsers(data) { localStorage.setItem(STORAGE.users, JSON.stringify(data)); }
+  function saveRooms(data) { localStorage.setItem(STORAGE.rooms, JSON.stringify(data)); }
+  function saveBookings(data) { localStorage.setItem(STORAGE.bookings, JSON.stringify(data)); }
+  function saveTransactions(data) { localStorage.setItem(STORAGE.transactions, JSON.stringify(data)); }
 
   function showToast(msg, isErr = false) {
-    let t = document.querySelector('.toast');
-    if(t) t.remove();
+    let existing = document.querySelector('.toast-custom');
+    if(existing) existing.remove();
     let toast = document.createElement('div');
-    toast.className = 'toast';
+    toast.className = 'toast-custom';
     toast.innerHTML = `<i class="fas ${isErr ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${msg}`;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2500);
+    setTimeout(() => toast.remove(), 2600);
   }
 
-  // Cek ketersediaan kamar (tidak double booking dengan status paid)
-  function isRoomAvailable(roomId, checkin, checkout, excludeId = null) {
-    const bookings = getBookings().filter(b => b.paymentStatus === 'paid' && b.id !== excludeId);
-    const ci = new Date(checkin), co = new Date(checkout);
-    for(let b of bookings) {
-      if(b.roomId === roomId) {
-        let bci = new Date(b.checkinDate), bco = new Date(b.checkoutDate);
-        if((ci < bco && co > bci)) return false;
-      }
+  // Cek ketersediaan kamar (tidak overlap tanggal)
+  function isRoomAvailable(roomId, checkin, checkout, excludeBookingId = null) {
+    const bookings = getBookings();
+    const checkinDate = new Date(checkin);
+    const checkoutDate = new Date(checkout);
+    const overlapping = bookings.filter(b => b.roomId === roomId && b.paymentStatus === 'paid' && b.id !== excludeBookingId);
+    for(let b of overlapping) {
+      let bStart = new Date(b.checkinDate);
+      let bEnd = new Date(b.checkoutDate);
+      if((checkinDate < bEnd && checkoutDate > bStart)) return false;
     }
     return true;
   }
 
-  // Registrasi
+  // Registrasi & Login
   function handleRegister(e) {
     e.preventDefault();
     const name = document.getElementById('regName').value.trim();
     const email = document.getElementById('regEmail').value.trim();
     const phone = document.getElementById('regPhone').value.trim();
     const password = document.getElementById('regPassword').value;
-    if(!name || !email || !password) { showToast('Lengkapi data', true); return; }
+    if(!name || !email || !password) { showToast('Data tidak lengkap', true); return; }
     let users = getUsers();
     if(users.find(u => u.email === email)) { showToast('Email sudah terdaftar', true); return; }
-    const newUser = { id: Date.now()+'-cust', email, password, name, phone, role: 'customer' };
+    const newUser = { id: Date.now()+'-cust', email, password, name, role: 'customer', phone };
     users.push(newUser);
     saveUsers(users);
-    showToast('Registrasi berhasil, silakan login');
+    showToast('Registrasi berhasil! Silakan login.', false);
     document.getElementById('showLoginBtn').click();
   }
 
@@ -348,110 +525,179 @@
     const email = document.getElementById('loginEmail').value.trim();
     const pass = document.getElementById('loginPassword').value;
     const users = getUsers();
-    const user = users.find(u => u.email === email && u.password === pass);
+    const user = users.find(u => u.email === email && u.password === pass && u.role === 'customer');
     if(!user) { showToast('Email atau password salah', true); return; }
     currentUser = user;
-    localStorage.setItem('luxe_session_cust', JSON.stringify({ id: user.id, email: user.email }));
-    document.getElementById('authSection').classList.add('hidden');
-    document.getElementById('dashboardSection').classList.remove('hidden');
-    document.getElementById('userNameDisplay').innerText = `Halo, ${user.name}`;
-    // load data awal
-    loadCustomerStats();
-    loadCustomerBookings();
-    populateRoomSelect();
-    // aktifkan tab pertama
-    document.querySelector('.nav-btn[data-tab="dashboard"]').click();
+    localStorage.setItem('luxe_session_customer', JSON.stringify({ id: user.id, email: user.email }));
+    document.getElementById('loginContainer').style.display = 'none';
+    document.getElementById('dashboardContainer').style.display = 'flex';
+    renderCustomerDashboard();
   }
 
   function logout() {
     currentUser = null;
-    localStorage.removeItem('luxe_session_cust');
-    document.getElementById('authSection').classList.remove('hidden');
-    document.getElementById('dashboardSection').classList.add('hidden');
-    document.getElementById('loginForm').reset();
+    localStorage.removeItem('luxe_session_customer');
+    document.getElementById('dashboardContainer').style.display = 'none';
+    document.getElementById('loginContainer').style.display = 'flex';
   }
 
-  // Customer stats
+  // ========================= RENDER CUSTOMER DASHBOARD =========================
+  function renderCustomerDashboard() {
+    const sidebarDiv = document.getElementById('customerSidebar');
+    const mainDiv = document.getElementById('customerMainContent');
+    
+    // Sidebar untuk customer
+    const menuItems = [
+      { id: 'cust_home', icon: 'fa-home', label: 'Dashboard', tab: 'customerDashboard' },
+      { id: 'cust_search', icon: 'fa-search', label: 'Cari & Booking Kamar', tab: 'customerSearch' },
+      { id: 'cust_mybookings', icon: 'fa-ticket-alt', label: 'Booking Saya', tab: 'customerMyBookings' }
+    ];
+    let sidebarHtml = `<h2><i class="fas fa-calendar-alt"></i> <span>LuxeBooking</span></h2><nav>`;
+    menuItems.forEach(item => {
+      sidebarHtml += `<button class="nav-btn" data-tab="${item.tab}"><i class="fas ${item.icon}"></i> <span>${item.label}</span></button>`;
+    });
+    sidebarHtml += `<button class="nav-btn" id="logoutBtnSidebar"><i class="fas fa-sign-out-alt"></i> <span>Keluar</span></button></nav>`;
+    sidebarDiv.innerHTML = sidebarHtml;
+    
+    mainDiv.innerHTML = `<div id="tabContainer"></div>`;
+    const tabContainer = document.getElementById('tabContainer');
+    
+    const tabs = {
+      customerDashboard: `<div class="tab-content" id="customerDashboardTab"><h1>✨ Dashboard Saya</h1><div id="custStatsGrid" class="stats-grid"></div><div class="stat-card"><p>Selamat datang, ${currentUser.name}. Kelola booking hotel Anda dengan mudah.</p></div></div>`,
+      customerSearch: `<div class="tab-content" id="customerSearchTab"><h2><i class="fas fa-search"></i> Cari Ketersediaan Kamar</h2><div class="stats-grid" style="background:rgba(0,0,0,0.2); padding:1rem; border-radius:1.5rem;"><div class="form-group"><label>Tanggal Check-in</label><input type="date" id="searchCheckin"></div><div class="form-group"><label>Tanggal Check-out</label><input type="date" id="searchCheckout"></div><div class="form-group"><label>Tipe Kamar</label><select id="searchRoomType"><option value="">Semua</option></select></div><button id="doSearchRoomsBtn" class="btn-primary">Cari Kamar Tersedia</button></div><div id="searchResults" class="table-wrapper" style="margin-top:1.5rem;"><table><thead><tr><th>Tipe</th><th>Harga/malam</th><th>Stok</th><th>Aksi</th></tr></thead><tbody id="searchResultsBody"></tbody></table></div></div>`,
+      customerMyBookings: `<div class="tab-content" id="customerMyBookingsTab"><div class="tab-header"><h2>Booking Saya</h2></div><div class="table-wrapper"><table id="myBookingsTable"><thead><tr><th>ID</th><th>Kamar</th><th>Check-in</th><th>Check-out</th><th>Tamu</th><th>Total</th><th>Status Bayar</th><th>E-Voucher</th></tr></thead><tbody id="myBookingsBody"></tbody></table></div><div style="margin-top:1rem; text-align:right;"><button id="clearAllBookingsBtn" class="btn-secondary"><i class="fas fa-trash-alt"></i> Hapus Semua Booking Saya</button></div></div>`
+    };
+    
+    for(let [id, content] of Object.entries(tabs)) {
+      let div = document.createElement('div');
+      div.innerHTML = content;
+      tabContainer.appendChild(div.firstElementChild);
+    }
+    
+    // Event listener untuk navigasi
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      if(btn.id === 'logoutBtnSidebar') btn.addEventListener('click', logout);
+      else {
+        const tabId = btn.getAttribute('data-tab');
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+          const target = document.getElementById(tabId+'Tab');
+          if(target) target.classList.add('active');
+          if(tabId === 'customerDashboard') loadCustomerStats();
+          if(tabId === 'customerMyBookings') loadCustomerBookings();
+          if(tabId === 'customerSearch') { populateRoomSelect(); attachSearchEvent(); }
+        });
+      }
+    });
+    
+    // Aktifkan tab pertama (Dashboard)
+    document.querySelector('.nav-btn').click();
+    
+    // Event hapus semua booking
+    document.getElementById('clearAllBookingsBtn')?.addEventListener('click', () => {
+      if(confirm('Hapus SEMUA booking Anda? Tindakan ini tidak dapat dibatalkan.')) {
+        let all = getBookings();
+        let remaining = all.filter(b => b.customerEmail !== currentUser.email);
+        saveBookings(remaining);
+        loadCustomerBookings();
+        loadCustomerStats();
+        showToast('Semua booking telah dihapus', false);
+      }
+    });
+  }
+  
+  // Customer Stats
   function loadCustomerStats() {
     const myBookings = getBookings().filter(b => b.customerEmail === currentUser.email);
     const total = myBookings.length;
     const paid = myBookings.filter(b => b.paymentStatus === 'paid').length;
-    document.getElementById('custStats').innerHTML = `
+    document.getElementById('custStatsGrid').innerHTML = `
       <div class="stat-card"><i class="fas fa-calendar-week"></i><h3>${total}</h3><p>Total Booking</p></div>
       <div class="stat-card"><i class="fas fa-check-circle"></i><h3>${paid}</h3><p>Lunas</p></div>
-      <div class="stat-card"><i class="fas fa-wallet"></i><h3>${myBookings.reduce((sum,b)=>sum+b.totalPrice,0).toLocaleString()}</h3><p>Total Belanja</p></div>
+      <div class="stat-card"><i class="fas fa-bed"></i><h3>${getRooms().length}</h3><p>Tipe Kamar Tersedia</p></div>
     `;
   }
-
+  
   function loadCustomerBookings() {
     const myBookings = getBookings().filter(b => b.customerEmail === currentUser.email);
     const tbody = document.getElementById('myBookingsBody');
+    if(!tbody) return;
     if(myBookings.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7">Belum ada booking</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">✨ Belum ada booking. Silakan cari kamar!</td></tr>';
       return;
     }
     tbody.innerHTML = myBookings.map(b => `
       <tr>
-        <td>${b.id.slice(-8)}</td>
+        <td>${b.id.slice(-6)}</td>
         <td>${b.roomType}</td>
         <td>${b.checkinDate}</td>
         <td>${b.checkoutDate}</td>
+        <td>${b.guests || 1}</td>
         <td>Rp ${b.totalPrice.toLocaleString()}</td>
-        <td>${b.paymentStatus === 'paid' ? '✅ Lunas' : '⏳ Pending'}</td>
+        <td>${b.paymentStatus === 'paid' ? '<span style="color:#4ade80;">✓ Lunas</span>' : '<span style="color:#facc15;">⏳ Pending</span>'}</td>
         <td>${b.e_voucher || '-'}</td>
       </tr>
     `).join('');
   }
-
+  
   function populateRoomSelect() {
     const sel = document.getElementById('searchRoomType');
     if(sel) {
       sel.innerHTML = '<option value="">Semua</option>' + getRooms().map(r => `<option value="${r.type}">${r.type}</option>`).join('');
     }
   }
-
-  // Pencarian kamar
-  function attachSearch() {
-    const btn = document.getElementById('doSearchBtn');
-    btn.onclick = () => {
+  
+  function attachSearchEvent() {
+    const btn = document.getElementById('doSearchRoomsBtn');
+    if(!btn) return;
+    // Hapus event lama dengan clone
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener('click', () => {
       const checkin = document.getElementById('searchCheckin').value;
       const checkout = document.getElementById('searchCheckout').value;
       const roomType = document.getElementById('searchRoomType').value;
       if(!checkin || !checkout) { showToast('Pilih tanggal check-in dan check-out', true); return; }
       if(new Date(checkin) >= new Date(checkout)) { showToast('Check-out harus setelah check-in', true); return; }
-      let rooms = getRooms().filter(r => (roomType ? r.type === roomType : true) && r.stock > 0);
-      // filter ketersediaan
-      rooms = rooms.filter(r => isRoomAvailable(r.id, checkin, checkout));
+      let availableRooms = getRooms().filter(r => (roomType ? r.type === roomType : true) && r.stock > 0);
+      availableRooms = availableRooms.filter(r => isRoomAvailable(r.id, checkin, checkout));
       const tbody = document.getElementById('searchResultsBody');
-      if(rooms.length === 0) {
+      if(availableRooms.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4">Tidak ada kamar tersedia untuk tanggal tersebut</td></tr>';
       } else {
-        tbody.innerHTML = rooms.map(r => `
+        tbody.innerHTML = availableRooms.map(r => `
           <tr>
             <td>${r.type}</td>
             <td>Rp ${r.pricePerNight.toLocaleString()}</td>
             <td>${r.stock}</td>
-            <td><button class="btn-primary book-now" data-room='${JSON.stringify(r)}' data-ci="${checkin}" data-co="${checkout}">Pesan Sekarang</button></td>
+            <td><button class="btn-primary book-room-btn" data-room='${JSON.stringify(r)}' data-checkin="${checkin}" data-checkout="${checkout}">Booking Sekarang</button></td>
           </tr>
         `).join('');
-        document.querySelectorAll('.book-now').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            const room = JSON.parse(btn.getAttribute('data-room'));
-            const cin = btn.getAttribute('data-ci');
-            const cout = btn.getAttribute('data-co');
-            openBookingPayment(room, cin, cout);
-          });
-        });
       }
-    };
+      // Pasang event listener untuk tombol booking yang baru
+      document.querySelectorAll('.book-room-btn').forEach(btn => {
+        btn.removeEventListener('click', bookingHandler);
+        btn.addEventListener('click', bookingHandler);
+      });
+    });
   }
-
-  function openBookingPayment(room, checkin, checkout) {
-    const nights = Math.ceil((new Date(checkout) - new Date(checkin)) / (1000*3600*24));
+  
+  function bookingHandler(e) {
+    const btn = e.currentTarget;
+    const roomData = JSON.parse(btn.getAttribute('data-room'));
+    const checkin = btn.getAttribute('data-checkin');
+    const checkout = btn.getAttribute('data-checkout');
+    openPaymentModal(roomData, checkin, checkout);
+  }
+  
+  function openPaymentModal(room, checkin, checkout) {
+    const nights = Math.ceil((new Date(checkout) - new Date(checkin)) / (1000 * 3600 * 24));
     const total = nights * room.pricePerNight;
-    const metode = prompt('Pilih metode pembayaran:\n1. Kartu Kredit\n2. Transfer Bank\nKetik: Kartu Kredit / Transfer Bank', 'Kartu Kredit');
+    const metode = prompt('Pilih metode pembayaran (Kartu Kredit / Transfer Bank):', 'Kartu Kredit');
     if(!metode) return;
-    const bookingId = 'BK' + Date.now() + '-' + Math.random().toString(36).substr(2,4);
+    const bookingId = 'BK' + Date.now() + '-' + Math.floor(Math.random() * 1000);
     const newBooking = {
       id: bookingId,
       customerEmail: currentUser.email,
@@ -470,85 +716,44 @@
     let bookings = getBookings();
     bookings.push(newBooking);
     saveBookings(bookings);
-    showToast(`Memproses pembayaran Rp ${total.toLocaleString()} via ${metode}...`);
-    // Simulasi gateway pembayaran (callback sukses setelah 1.5 detik)
+    showToast(`Memproses pembayaran Rp ${total.toLocaleString()} via ${metode}...`, false);
+    // Simulasi payment gateway callback
     setTimeout(() => {
-      let updated = getBookings();
-      const idx = updated.findIndex(b => b.id === bookingId);
+      let updatedBookings = getBookings();
+      const idx = updatedBookings.findIndex(b => b.id === bookingId);
       if(idx !== -1) {
-        updated[idx].paymentStatus = 'paid';
+        updatedBookings[idx].paymentStatus = 'paid';
         const voucher = `EV-${bookingId}`;
-        updated[idx].e_voucher = voucher;
-        saveBookings(updated);
-        // Simpan transaksi
+        updatedBookings[idx].e_voucher = voucher;
+        saveBookings(updatedBookings);
         let trans = getTransactions();
-        trans.push({ id: 'TRX'+Date.now(), bookingId, amount: total, method: metode, status: 'SUCCESS', e_voucher: voucher, date: new Date().toISOString() });
+        trans.push({ id: 'TRX' + Date.now(), bookingId, amount: total, method: metode, status: 'SUCCESS', e_voucher: voucher, date: new Date().toISOString() });
         saveTransactions(trans);
-        showToast(`✅ Pembayaran berhasil! E-Voucher: ${voucher}`);
-        loadCustomerStats();
+        showToast(`✅ Pembayaran berhasil! E-Voucher: ${voucher}`, false);
         loadCustomerBookings();
-        // Refresh tab booking jika sedang aktif
-        if(document.querySelector('.nav-btn[data-tab="mybookings"]').classList.contains('active')) {
-          loadCustomerBookings();
-        }
+        loadCustomerStats();
+      } else {
+        showToast('Gagal memproses pembayaran', true);
       }
     }, 1500);
   }
-
-  // Tab switching
-  function initTabs() {
-    const btns = document.querySelectorAll('.nav-btn');
-    const tabs = {
-      dashboard: document.getElementById('dashboardTab'),
-      search: document.getElementById('searchTab'),
-      mybookings: document.getElementById('mybookingsTab')
-    };
-    btns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tabId = btn.getAttribute('data-tab');
-        btns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        Object.values(tabs).forEach(tab => tab.classList.remove('active'));
-        if(tabId === 'dashboard') { tabs.dashboard.classList.add('active'); loadCustomerStats(); }
-        if(tabId === 'search') { tabs.search.classList.add('active'); attachSearch(); populateRoomSelect(); }
-        if(tabId === 'mybookings') { tabs.mybookings.classList.add('active'); loadCustomerBookings(); }
-      });
-    });
-  }
-
-  // Auto login check
-  function autoLogin() {
-    const session = localStorage.getItem('luxe_session_cust');
-    if(session) {
-      const ses = JSON.parse(session);
-      const users = getUsers();
-      const found = users.find(u => u.id === ses.id);
-      if(found) {
-        currentUser = found;
-        document.getElementById('authSection').classList.add('hidden');
-        document.getElementById('dashboardSection').classList.remove('hidden');
-        document.getElementById('userNameDisplay').innerText = `Halo, ${found.name}`;
-        loadCustomerStats();
-        loadCustomerBookings();
-        populateRoomSelect();
-        initTabs();
-        document.querySelector('.nav-btn[data-tab="dashboard"]').click();
-        return true;
-      } else {
-        localStorage.removeItem('luxe_session_cust');
-      }
-    }
-    return false;
-  }
-
-  // Event listeners
+  
+  // Inisialisasi
   window.onload = () => {
     initData();
-    if(!autoLogin()) {
-      document.getElementById('authSection').classList.remove('hidden');
-      document.getElementById('dashboardSection').classList.add('hidden');
-    } else {
-      initTabs();
+    const session = localStorage.getItem('luxe_session_customer');
+    if(session) {
+      let ses = JSON.parse(session);
+      const users = getUsers();
+      const found = users.find(u => u.id === ses.id && u.role === 'customer');
+      if(found) {
+        currentUser = found;
+        document.getElementById('loginContainer').style.display = 'none';
+        document.getElementById('dashboardContainer').style.display = 'flex';
+        renderCustomerDashboard();
+      } else {
+        localStorage.removeItem('luxe_session_customer');
+      }
     }
     document.getElementById('showLoginBtn').addEventListener('click', () => {
       document.getElementById('loginPanel').style.display = 'block';
@@ -560,7 +765,10 @@
     });
     document.getElementById('loginForm').addEventListener('submit', handleLogin);
     document.getElementById('registerForm').addEventListener('submit', handleRegister);
-    document.getElementById('logoutBtn').addEventListener('click', logout);
+    if(!currentUser) {
+      document.getElementById('loginContainer').style.display = 'flex';
+      document.getElementById('dashboardContainer').style.display = 'none';
+    }
   };
 </script>
 </body>
