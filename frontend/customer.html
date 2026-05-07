@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>LuxeBooking · Hotel Management System (DFD Level 0-1)</title>
+  <title>LuxeBooking · Customer Panel</title>
   <!-- Google Fonts & Font Awesome -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -315,77 +315,6 @@
       cursor: pointer;
     }
 
-    /* MODAL STYLE */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(8px);
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .modal-content {
-      background: #1e293b;
-      border-radius: 2rem;
-      width: 550px;
-      max-width: 90%;
-      padding: 2rem;
-      box-shadow: 0 25px 40px rgba(0,0,0,0.4);
-      border: 1px solid rgba(255,140,50,0.4);
-      animation: fadeInScale 0.2s ease;
-    }
-    @keyframes fadeInScale {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    .modal-content .close {
-      float: right;
-      font-size: 1.8rem;
-      font-weight: lighter;
-      cursor: pointer;
-      color: #facc15;
-      transition: 0.2s;
-    }
-    .modal-content .close:hover {
-      color: #ff8c32;
-    }
-    .modal-content h3 {
-      margin-bottom: 1.5rem;
-      font-size: 1.5rem;
-    }
-    .form-group {
-      margin-bottom: 1rem;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 0.4rem;
-      font-weight: 500;
-      font-size: 0.85rem;
-      color: #cbd5e6;
-    }
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 0.7rem;
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 1rem;
-      color: white;
-      font-family: 'Inter', monospace;
-    }
-    .form-group input:focus, .form-group select:focus {
-      outline: none;
-      border-color: #ff8c32;
-    }
-    button[type="submit"] {
-      width: 100%;
-      margin-top: 1rem;
-    }
-
     /* LOGIN CARD */
     .login-overlay {
       position: fixed;
@@ -477,7 +406,7 @@
 <div id="loginContainer" class="login-overlay">
   <div class="login-card">
     <i class="fas fa-hotel"></i>
-    <h2>LuxeBooking · Hotel System</h2>
+    <h2>LuxeBooking · Customer Access</h2>
     <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
       <button id="showLoginBtn" class="btn-primary" style="flex:1;">Login</button>
       <button id="showRegisterBtn" class="btn-secondary" style="flex:1;">Daftar</button>
@@ -498,33 +427,31 @@
         <button type="submit" class="btn-primary" style="width:100%;">Buat Akun</button>
       </form>
     </div>
-    <p style="font-size:0.7rem; margin-top:1rem;">Demo Admin: admin@luxe.com / admin123</p>
+    <p style="font-size:0.7rem; margin-top:1rem;">Demo: customer@demo.com / pass123</p>
   </div>
 </div>
 
-<!-- DASHBOARD (dinamis) -->
+<!-- DASHBOARD (Customer only) -->
 <div id="dashboardContainer" style="display: none;">
   <div class="dashboard-container">
-    <aside class="sidebar" id="dynamicSidebar">
-      <!-- sidebar diisi JS -->
+    <aside class="sidebar" id="customerSidebar">
+      <!-- sidebar akan diisi JS -->
     </aside>
-    <main class="main-content" id="dynamicMainContent">
+    <main class="main-content" id="customerMainContent">
       <!-- konten tab dinamis -->
     </main>
   </div>
 </div>
 
 <script>
-  // ================================ DATABASE (localStorage) sesuai DFD ==================================
-  // stores: users, rooms, bookings, transactions
-  const STORAGE = { users: 'luxe_users', rooms: 'luxe_rooms', bookings: 'luxe_bookings', transactions: 'luxe_transactions' };
+  // ======================== DATA STORAGE (localStorage) ========================
+  const STORAGE = { users: 'luxe_users_customer', rooms: 'luxe_rooms_customer', bookings: 'luxe_bookings_customer', transactions: 'luxe_transactions_customer' };
   let currentUser = null;
 
-  // Helper init data default
+  // Inisialisasi data default (hanya customer)
   function initData() {
     if(!localStorage.getItem(STORAGE.users)) {
       const defaultUsers = [
-        { id: 'adm1', email: 'admin@luxe.com', password: 'admin123', name: 'Administrator', role: 'admin', phone: '' },
         { id: 'cust_demo', email: 'customer@demo.com', password: 'pass123', name: 'Budi Santoso', role: 'customer', phone: '08123456789' }
       ];
       localStorage.setItem(STORAGE.users, JSON.stringify(defaultUsers));
@@ -540,6 +467,7 @@
     if(!localStorage.getItem(STORAGE.bookings)) localStorage.setItem(STORAGE.bookings, JSON.stringify([]));
     if(!localStorage.getItem(STORAGE.transactions)) localStorage.setItem(STORAGE.transactions, JSON.stringify([]));
   }
+
   function getUsers() { return JSON.parse(localStorage.getItem(STORAGE.users)); }
   function getRooms() { return JSON.parse(localStorage.getItem(STORAGE.rooms)); }
   function getBookings() { return JSON.parse(localStorage.getItem(STORAGE.bookings)); }
@@ -549,7 +477,6 @@
   function saveBookings(data) { localStorage.setItem(STORAGE.bookings, JSON.stringify(data)); }
   function saveTransactions(data) { localStorage.setItem(STORAGE.transactions, JSON.stringify(data)); }
 
-  // Helper UI
   function showToast(msg, isErr = false) {
     let existing = document.querySelector('.toast-custom');
     if(existing) existing.remove();
@@ -560,7 +487,7 @@
     setTimeout(() => toast.remove(), 2600);
   }
 
-  // Fungsi cek ketersediaan kamar sederhana (tidak overlap tanggal)
+  // Cek ketersediaan kamar (tidak overlap tanggal)
   function isRoomAvailable(roomId, checkin, checkout, excludeBookingId = null) {
     const bookings = getBookings();
     const checkinDate = new Date(checkin);
@@ -596,34 +523,29 @@
     const email = document.getElementById('loginEmail').value.trim();
     const pass = document.getElementById('loginPassword').value;
     const users = getUsers();
-    const user = users.find(u => u.email === email && u.password === pass);
+    const user = users.find(u => u.email === email && u.password === pass && u.role === 'customer');
     if(!user) { showToast('Email atau password salah', true); return; }
     currentUser = user;
-    localStorage.setItem('luxe_session', JSON.stringify({ id: user.id, email: user.email, role: user.role }));
+    localStorage.setItem('luxe_session_customer', JSON.stringify({ id: user.id, email: user.email }));
     document.getElementById('loginContainer').style.display = 'none';
     document.getElementById('dashboardContainer').style.display = 'flex';
-    renderDashboardByRole();
+    renderCustomerDashboard();
   }
 
   function logout() {
     currentUser = null;
-    localStorage.removeItem('luxe_session');
+    localStorage.removeItem('luxe_session_customer');
     document.getElementById('dashboardContainer').style.display = 'none';
     document.getElementById('loginContainer').style.display = 'flex';
   }
 
-  // ============================ RENDER SIDEBAR & TABS SESUAI ROLE ======================
-  function renderDashboardByRole() {
-    const sidebarDiv = document.getElementById('dynamicSidebar');
-    const mainDiv = document.getElementById('dynamicMainContent');
-    if(!currentUser) return;
-    const isAdmin = currentUser.role === 'admin';
-    const menuItems = isAdmin ? [
-      { id: 'admin_home', icon: 'fa-chart-line', label: 'Dashboard Hotel', tab: 'adminDashboard' },
-      { id: 'admin_rooms', icon: 'fa-bed', label: 'Kelola Kamar', tab: 'adminRooms' },
-      { id: 'admin_bookings', icon: 'fa-calendar-check', label: 'Semua Booking', tab: 'adminBookings' },
-      { id: 'admin_transactions', icon: 'fa-credit-card', label: 'Transaksi', tab: 'adminTransactions' }
-    ] : [
+  // ========================= RENDER CUSTOMER DASHBOARD =========================
+  function renderCustomerDashboard() {
+    const sidebarDiv = document.getElementById('customerSidebar');
+    const mainDiv = document.getElementById('customerMainContent');
+    
+    // Sidebar untuk customer
+    const menuItems = [
       { id: 'cust_home', icon: 'fa-home', label: 'Dashboard', tab: 'customerDashboard' },
       { id: 'cust_search', icon: 'fa-search', label: 'Cari & Booking Kamar', tab: 'customerSearch' },
       { id: 'cust_mybookings', icon: 'fa-ticket-alt', label: 'Booking Saya', tab: 'customerMyBookings' }
@@ -634,27 +556,23 @@
     });
     sidebarHtml += `<button class="nav-btn" id="logoutBtnSidebar"><i class="fas fa-sign-out-alt"></i> <span>Keluar</span></button></nav>`;
     sidebarDiv.innerHTML = sidebarHtml;
-    // konten awal
+    
     mainDiv.innerHTML = `<div id="tabContainer"></div>`;
-    // register tab container
     const tabContainer = document.getElementById('tabContainer');
-    const tabs = {};
-    if(isAdmin){
-      tabs.adminDashboard = `<div class="tab-content" id="adminDashboardTab"><h1>🏨 Manajemen Hotel</h1><div id="adminStats"></div><div class="stat-card"><p>Selamat datang, Admin. Kelola kamar, booking, dan transaksi sesuai DFD Level 1.</p></div></div>`;
-      tabs.adminRooms = `<div class="tab-content" id="adminRoomsTab"><div class="tab-header"><h2>Data Kamar & Stok</h2><button id="addRoomBtn" class="btn-primary"><i class="fas fa-plus"></i> Tambah Tipe Kamar</button></div><div class="table-wrapper"><table id="roomsTableAdmin"><thead><tr><th>Tipe</th><th>Harga/malam</th><th>Stok</th><th>Aksi</th></tr></thead><tbody id="roomsTbody"></tbody></table></div></div>`;
-      tabs.adminBookings = `<div class="tab-content" id="adminBookingsTab"><div class="tab-header"><h2>Daftar Semua Booking</h2></div><div class="table-wrapper"><table id="allBookingsTable"><thead><tr><th>ID</th><th>Customer</th><th>Kamar</th><th>Cek-in</th><th>Cek-out</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="allBookingsBody"></tbody></table></div></div>`;
-      tabs.adminTransactions = `<div class="tab-content" id="adminTransactionsTab"><h2>Riwayat Transaksi Pembayaran</h2><div class="table-wrapper"><table id="transactionsTable"><thead><tr><th>ID Transaksi</th><th>Booking ID</th><th>Jumlah</th><th>Metode</th><th>Status</th><th>E-Voucher</th></tr></thead><tbody id="transactionsTbody"></tbody></table></div></div>`;
-    } else {
-      tabs.customerDashboard = `<div class="tab-content" id="customerDashboardTab"><h1>✨ Dashboard Saya</h1><div id="custStatsGrid" class="stats-grid"></div></div>`;
-      tabs.customerSearch = `<div class="tab-content" id="customerSearchTab"><h2><i class="fas fa-search"></i> Cari Ketersediaan Kamar</h2><div class="stats-grid" style="background:rgba(0,0,0,0.2); padding:1rem; border-radius:1.5rem;"><div class="form-group"><label>Tanggal Check-in</label><input type="date" id="searchCheckin"></div><div class="form-group"><label>Tanggal Check-out</label><input type="date" id="searchCheckout"></div><div class="form-group"><label>Tipe Kamar</label><select id="searchRoomType"><option value="">Semua</option></select></div><button id="doSearchRoomsBtn" class="btn-primary">Cari Kamar Tersedia</button></div><div id="searchResults" class="table-wrapper" style="margin-top:1.5rem;"><table><thead><tr><th>Tipe</th><th>Harga/malam</th><th>Stok</th><th>Aksi</th></tr></thead><tbody id="searchResultsBody"></tbody></table></div></div>`;
-      tabs.customerMyBookings = `<div class="tab-content" id="customerMyBookingsTab"><div class="tab-header"><h2>Booking Saya</h2></div><div class="table-wrapper"><table id="myBookingsTable"><thead><tr><th>ID</th><th>Kamar</th><th>Check-in</th><th>Check-out</th><th>Tamu</th><th>Total</th><th>Status Bayar</th><th>E-Voucher</th></tr></thead><tbody id="myBookingsBody"></tbody></table></div></div>`;
-    }
+    
+    const tabs = {
+      customerDashboard: `<div class="tab-content" id="customerDashboardTab"><h1>✨ Dashboard Saya</h1><div id="custStatsGrid" class="stats-grid"></div><div class="stat-card"><p>Selamat datang, ${currentUser.name}. Kelola booking hotel Anda dengan mudah.</p></div></div>`,
+      customerSearch: `<div class="tab-content" id="customerSearchTab"><h2><i class="fas fa-search"></i> Cari Ketersediaan Kamar</h2><div class="stats-grid" style="background:rgba(0,0,0,0.2); padding:1rem; border-radius:1.5rem;"><div class="form-group"><label>Tanggal Check-in</label><input type="date" id="searchCheckin"></div><div class="form-group"><label>Tanggal Check-out</label><input type="date" id="searchCheckout"></div><div class="form-group"><label>Tipe Kamar</label><select id="searchRoomType"><option value="">Semua</option></select></div><button id="doSearchRoomsBtn" class="btn-primary">Cari Kamar Tersedia</button></div><div id="searchResults" class="table-wrapper" style="margin-top:1.5rem;"><table><thead><tr><th>Tipe</th><th>Harga/malam</th><th>Stok</th><th>Aksi</th></tr></thead><tbody id="searchResultsBody"></tbody></table></div></div>`,
+      customerMyBookings: `<div class="tab-content" id="customerMyBookingsTab"><div class="tab-header"><h2>Booking Saya</h2></div><div class="table-wrapper"><table id="myBookingsTable"><thead><tr><th>ID</th><th>Kamar</th><th>Check-in</th><th>Check-out</th><th>Tamu</th><th>Total</th><th>Status Bayar</th><th>E-Voucher</th></tr></thead><tbody id="myBookingsBody"></tbody></table></div><div style="margin-top:1rem; text-align:right;"><button id="clearAllBookingsBtn" class="btn-secondary"><i class="fas fa-trash-alt"></i> Hapus Semua Booking Saya</button></div></div>`
+    };
+    
     for(let [id, content] of Object.entries(tabs)) {
       let div = document.createElement('div');
       div.innerHTML = content;
       tabContainer.appendChild(div.firstElementChild);
     }
-    // event nav & load data
+    
+    // Event listener untuk navigasi
     document.querySelectorAll('.nav-btn').forEach(btn => {
       if(btn.id === 'logoutBtnSidebar') btn.addEventListener('click', logout);
       else {
@@ -665,140 +583,190 @@
           document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
           const target = document.getElementById(tabId+'Tab');
           if(target) target.classList.add('active');
-          if(tabId === 'adminDashboard') loadAdminStats();
-          if(tabId === 'adminRooms') loadRoomsAdmin();
-          if(tabId === 'adminBookings') loadAllBookingsAdmin();
-          if(tabId === 'adminTransactions') loadTransactionsAdmin();
           if(tabId === 'customerDashboard') loadCustomerStats();
           if(tabId === 'customerMyBookings') loadCustomerBookings();
           if(tabId === 'customerSearch') { populateRoomSelect(); attachSearchEvent(); }
         });
       }
     });
-    // default aktif pertama
+    
+    // Aktifkan tab pertama (Dashboard)
     document.querySelector('.nav-btn').click();
+    
+    // Event hapus semua booking
+    document.getElementById('clearAllBookingsBtn')?.addEventListener('click', () => {
+      if(confirm('Hapus SEMUA booking Anda? Tindakan ini tidak dapat dibatalkan.')) {
+        let all = getBookings();
+        let remaining = all.filter(b => b.customerEmail !== currentUser.email);
+        saveBookings(remaining);
+        loadCustomerBookings();
+        loadCustomerStats();
+        showToast('Semua booking telah dihapus', false);
+      }
+    });
   }
-
+  
   // Customer Stats
   function loadCustomerStats() {
     const myBookings = getBookings().filter(b => b.customerEmail === currentUser.email);
     const total = myBookings.length;
     const paid = myBookings.filter(b => b.paymentStatus === 'paid').length;
-    document.getElementById('custStatsGrid').innerHTML = `<div class="stat-card"><i class="fas fa-calendar-week"></i><h3>${total}</h3><p>Total Booking</p></div><div class="stat-card"><i class="fas fa-check-circle"></i><h3>${paid}</h3><p>Lunas</p></div>`;
+    document.getElementById('custStatsGrid').innerHTML = `
+      <div class="stat-card"><i class="fas fa-calendar-week"></i><h3>${total}</h3><p>Total Booking</p></div>
+      <div class="stat-card"><i class="fas fa-check-circle"></i><h3>${paid}</h3><p>Lunas</p></div>
+      <div class="stat-card"><i class="fas fa-bed"></i><h3>${getRooms().length}</h3><p>Tipe Kamar Tersedia</p></div>
+    `;
   }
+  
   function loadCustomerBookings() {
     const myBookings = getBookings().filter(b => b.customerEmail === currentUser.email);
     const tbody = document.getElementById('myBookingsBody');
     if(!tbody) return;
-    if(myBookings.length===0) { tbody.innerHTML='<tr><td colspan="8">Belum ada booking</td></tr>'; return; }
-    tbody.innerHTML = myBookings.map(b => `<tr><td>${b.id.slice(-6)}</td><td>${b.roomType}</td><td>${b.checkinDate}</td><td>${b.checkoutDate}</td><td>${b.guests}</td><td>Rp ${b.totalPrice.toLocaleString()}</td><td>${b.paymentStatus}</td><td>${b.e_voucher || '-'}</td></tr>`).join('');
+    if(myBookings.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">✨ Belum ada booking. Silakan cari kamar!</td></tr>';
+      return;
+    }
+    tbody.innerHTML = myBookings.map(b => `
+      <tr>
+        <td>${b.id.slice(-6)}</td>
+        <td>${b.roomType}</td>
+        <td>${b.checkinDate}</td>
+        <td>${b.checkoutDate}</td>
+        <td>${b.guests || 1}</td>
+        <td>Rp ${b.totalPrice.toLocaleString()}</td>
+        <td>${b.paymentStatus === 'paid' ? '<span style="color:#4ade80;">✓ Lunas</span>' : '<span style="color:#facc15;">⏳ Pending</span>'}</td>
+        <td>${b.e_voucher || '-'}</td>
+      </tr>
+    `).join('');
   }
-  function populateRoomSelect() { const sel = document.getElementById('searchRoomType'); if(sel) { sel.innerHTML = '<option value="">Semua</option>'+getRooms().map(r=>`<option value="${r.type}">${r.type}</option>`).join(''); } }
+  
+  function populateRoomSelect() {
+    const sel = document.getElementById('searchRoomType');
+    if(sel) {
+      sel.innerHTML = '<option value="">Semua</option>' + getRooms().map(r => `<option value="${r.type}">${r.type}</option>`).join('');
+    }
+  }
+  
   function attachSearchEvent() {
     const btn = document.getElementById('doSearchRoomsBtn');
     if(!btn) return;
-    btn.onclick = () => {
+    // Hapus event lama dengan clone
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener('click', () => {
       const checkin = document.getElementById('searchCheckin').value;
       const checkout = document.getElementById('searchCheckout').value;
       const roomType = document.getElementById('searchRoomType').value;
-      if(!checkin || !checkout) { showToast('Pilih tanggal check-in/out', true); return; }
+      if(!checkin || !checkout) { showToast('Pilih tanggal check-in dan check-out', true); return; }
       if(new Date(checkin) >= new Date(checkout)) { showToast('Check-out harus setelah check-in', true); return; }
       let availableRooms = getRooms().filter(r => (roomType ? r.type === roomType : true) && r.stock > 0);
       availableRooms = availableRooms.filter(r => isRoomAvailable(r.id, checkin, checkout));
       const tbody = document.getElementById('searchResultsBody');
-      if(availableRooms.length===0) tbody.innerHTML='<tr><td colspan="4">Tidak ada kamar tersedia</td></tr>';
-      else tbody.innerHTML = availableRooms.map(r => `<tr><td>${r.type}</td><td>Rp ${r.pricePerNight.toLocaleString()}</td><td>${r.stock}</td><td><button class="btn-primary book-room-btn" data-room='${JSON.stringify(r)}' data-checkin="${checkin}" data-checkout="${checkout}">Booking Sekarang</button></td></tr>`).join('');
-      document.querySelectorAll('.book-room-btn').forEach(btn => btn.addEventListener('click', (e) => {
-        const roomData = JSON.parse(btn.getAttribute('data-room'));
-        const cin = btn.getAttribute('data-checkin');
-        const cout = btn.getAttribute('data-checkout');
-        openPaymentModal(roomData, cin, cout);
-      }));
-    };
+      if(availableRooms.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">Tidak ada kamar tersedia untuk tanggal tersebut</td></tr>';
+      } else {
+        tbody.innerHTML = availableRooms.map(r => `
+          <tr>
+            <td>${r.type}</td>
+            <td>Rp ${r.pricePerNight.toLocaleString()}</td>
+            <td>${r.stock}</td>
+            <td><button class="btn-primary book-room-btn" data-room='${JSON.stringify(r)}' data-checkin="${checkin}" data-checkout="${checkout}">Booking Sekarang</button></td>
+          </tr>
+        `).join('');
+      }
+      // Pasang event listener untuk tombol booking yang baru
+      document.querySelectorAll('.book-room-btn').forEach(btn => {
+        btn.removeEventListener('click', bookingHandler);
+        btn.addEventListener('click', bookingHandler);
+      });
+    });
   }
+  
+  function bookingHandler(e) {
+    const btn = e.currentTarget;
+    const roomData = JSON.parse(btn.getAttribute('data-room'));
+    const checkin = btn.getAttribute('data-checkin');
+    const checkout = btn.getAttribute('data-checkout');
+    openPaymentModal(roomData, checkin, checkout);
+  }
+  
   function openPaymentModal(room, checkin, checkout) {
-    const nights = Math.ceil((new Date(checkout) - new Date(checkin))/(1000*3600*24));
+    const nights = Math.ceil((new Date(checkout) - new Date(checkin)) / (1000 * 3600 * 24));
     const total = nights * room.pricePerNight;
     const metode = prompt('Pilih metode pembayaran (Kartu Kredit / Transfer Bank):', 'Kartu Kredit');
     if(!metode) return;
-    const bookingId = 'BK'+Date.now()+'-'+Math.floor(Math.random()*1000);
-    const newBooking = { id: bookingId, customerEmail: currentUser.email, customerName: currentUser.name, roomId: room.id, roomType: room.type, checkinDate: checkin, checkoutDate: checkout, guests: 1, totalPrice: total, paymentStatus: 'pending', metodePembayaran: metode, e_voucher: null, createdAt: new Date().toISOString() };
+    const bookingId = 'BK' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+    const newBooking = {
+      id: bookingId,
+      customerEmail: currentUser.email,
+      customerName: currentUser.name,
+      roomId: room.id,
+      roomType: room.type,
+      checkinDate: checkin,
+      checkoutDate: checkout,
+      guests: 1,
+      totalPrice: total,
+      paymentStatus: 'pending',
+      metodePembayaran: metode,
+      e_voucher: null,
+      createdAt: new Date().toISOString()
+    };
     let bookings = getBookings();
     bookings.push(newBooking);
     saveBookings(bookings);
-    // Simulasi Payment Gateway Callback
-    showToast(`Proses pembayaran Rp ${total.toLocaleString()} via ${metode}...`, false);
+    showToast(`Memproses pembayaran Rp ${total.toLocaleString()} via ${metode}...`, false);
+    // Simulasi payment gateway callback
     setTimeout(() => {
       let updatedBookings = getBookings();
       const idx = updatedBookings.findIndex(b => b.id === bookingId);
-      if(idx!==-1) {
+      if(idx !== -1) {
         updatedBookings[idx].paymentStatus = 'paid';
         const voucher = `EV-${bookingId}`;
         updatedBookings[idx].e_voucher = voucher;
         saveBookings(updatedBookings);
         let trans = getTransactions();
-        trans.push({ id: 'TRX'+Date.now(), bookingId, amount: total, method: metode, status: 'SUCCESS', e_voucher: voucher, date: new Date().toISOString() });
+        trans.push({ id: 'TRX' + Date.now(), bookingId, amount: total, method: metode, status: 'SUCCESS', e_voucher: voucher, date: new Date().toISOString() });
         saveTransactions(trans);
-        showToast(`Pembayaran berhasil! E-Voucher: ${voucher}`, false);
+        showToast(`✅ Pembayaran berhasil! E-Voucher: ${voucher}`, false);
         loadCustomerBookings();
+        loadCustomerStats();
+      } else {
+        showToast('Gagal memproses pembayaran', true);
       }
     }, 1500);
   }
-  // ADMIN FUNCTIONS
-  function loadAdminStats() { document.getElementById('adminStats').innerHTML = `<div class="stats-grid"><div class="stat-card"><i class="fas fa-bed"></i><h3>${getRooms().length}</h3><p>Tipe Kamar</p></div><div class="stat-card"><i class="fas fa-calendar"></i><h3>${getBookings().length}</h3><p>Total Booking</p></div></div>`; }
-  function loadRoomsAdmin() {
-    const rooms = getRooms();
-    const tbody = document.getElementById('roomsTbody');
-    tbody.innerHTML = rooms.map(r => `<tr><td>${r.type}</td><td><input type="number" id="price-${r.id}" value="${r.pricePerNight}" step="10000" class="form-control" style="background:#0f172a;width:120px;"></td><td><input type="number" id="stock-${r.id}" value="${r.stock}" min="0" style="width:80px;"></td><td><button class="btn-primary update-room" data-id="${r.id}">Update</button></td></tr>`).join('');
-    document.querySelectorAll('.update-room').forEach(btn => btn.addEventListener('click', (e) => {
-      const id = btn.getAttribute('data-id');
-      let roomsArr = getRooms();
-      const idx = roomsArr.findIndex(r=> r.id === id);
-      if(idx!==-1) {
-        roomsArr[idx].pricePerNight = parseInt(document.getElementById(`price-${id}`).value);
-        roomsArr[idx].stock = parseInt(document.getElementById(`stock-${id}`).value);
-        saveRooms(roomsArr);
-        showToast('Kamar terupdate', false);
-      }
-    }));
-    document.getElementById('addRoomBtn')?.addEventListener('click', () => {
-      let newType = prompt('Nama tipe kamar baru');
-      let price = parseInt(prompt('Harga per malam'));
-      if(newType && price) {
-        let roomsArr = getRooms();
-        roomsArr.push({ id: 'room_'+Date.now(), type: newType, pricePerNight: price, stock: 5, description: '' });
-        saveRooms(roomsArr);
-        loadRoomsAdmin();
-      }
-    });
-  }
-  function loadAllBookingsAdmin() {
-    const all = getBookings();
-    const tbody = document.getElementById('allBookingsBody');
-    tbody.innerHTML = all.map(b => `<tr><td>${b.id.slice(-6)}</td><td>${b.customerName}</td><td>${b.roomType}</td><td>${b.checkinDate}</td><td>${b.checkoutDate}</td><td>Rp ${b.totalPrice.toLocaleString()}</td><td>${b.paymentStatus}</td><td><button class="btn-danger delete-admin-booking" data-id="${b.id}">Batalkan</button></td></tr>`).join('');
-    document.querySelectorAll('.delete-admin-booking').forEach(btn => btn.addEventListener('click', () => { if(confirm('Batalkan booking?')) { let bk = getBookings().filter(b => b.id !== btn.getAttribute('data-id')); saveBookings(bk); loadAllBookingsAdmin(); loadAdminStats(); showToast('Booking dibatalkan', false); } }));
-  }
-  function loadTransactionsAdmin() {
-    const trans = getTransactions();
-    const tbody = document.getElementById('transactionsTbody');
-    tbody.innerHTML = trans.map(t => `<tr><td>${t.id}</td><td>${t.bookingId}</td><td>Rp ${t.amount.toLocaleString()}</td><td>${t.method}</td><td>${t.status}</td><td>${t.e_voucher}</td></tr>`).join('');
-  }
-  // Event listener Login/Register
+  
+  // Inisialisasi
   window.onload = () => {
     initData();
-    const session = localStorage.getItem('luxe_session');
+    const session = localStorage.getItem('luxe_session_customer');
     if(session) {
       let ses = JSON.parse(session);
       const users = getUsers();
-      const found = users.find(u => u.id === ses.id);
-      if(found) { currentUser = found; document.getElementById('loginContainer').style.display = 'none'; document.getElementById('dashboardContainer').style.display = 'flex'; renderDashboardByRole(); }
-      else { localStorage.removeItem('luxe_session'); }
+      const found = users.find(u => u.id === ses.id && u.role === 'customer');
+      if(found) {
+        currentUser = found;
+        document.getElementById('loginContainer').style.display = 'none';
+        document.getElementById('dashboardContainer').style.display = 'flex';
+        renderCustomerDashboard();
+      } else {
+        localStorage.removeItem('luxe_session_customer');
+      }
     }
-    document.getElementById('showLoginBtn').addEventListener('click', () => { document.getElementById('loginPanel').style.display='block'; document.getElementById('registerPanel').style.display='none'; });
-    document.getElementById('showRegisterBtn').addEventListener('click', () => { document.getElementById('loginPanel').style.display='none'; document.getElementById('registerPanel').style.display='block'; });
+    document.getElementById('showLoginBtn').addEventListener('click', () => {
+      document.getElementById('loginPanel').style.display = 'block';
+      document.getElementById('registerPanel').style.display = 'none';
+    });
+    document.getElementById('showRegisterBtn').addEventListener('click', () => {
+      document.getElementById('loginPanel').style.display = 'none';
+      document.getElementById('registerPanel').style.display = 'block';
+    });
     document.getElementById('loginForm').addEventListener('submit', handleLogin);
     document.getElementById('registerForm').addEventListener('submit', handleRegister);
-    if(!currentUser) { document.getElementById('loginContainer').style.display = 'flex'; document.getElementById('dashboardContainer').style.display = 'none'; }
+    if(!currentUser) {
+      document.getElementById('loginContainer').style.display = 'flex';
+      document.getElementById('dashboardContainer').style.display = 'none';
+    }
   };
 </script>
 </body>
