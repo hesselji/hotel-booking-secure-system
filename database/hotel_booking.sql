@@ -58,7 +58,7 @@ INSERT INTO rooms(
     description
 )
 VALUES
-('101', 'Single', 50, 'available', 'Single room'),
-('102', 'Double', 80, 'available', 'Double room'),
-('201', 'Suite', 150, 'available', 'Luxury suite');
+('101', 'Single', 800000, 'available', 'Single room'),
+('102', 'Double', 1280000, 'available', 'Double room'),
+('201', 'Suite', 2400000, 'available', 'Luxury suite');
 
