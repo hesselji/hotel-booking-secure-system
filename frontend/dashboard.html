@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Hotel Admin | Dashboard</title>
     <!-- Google Fonts & Font Awesome -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
@@ -58,8 +61,6 @@
         }
 
         .sidebar h2 i {
-            background: none;
-            -webkit-background-clip: unset;
             color: #ff8c32;
         }
 
@@ -130,10 +131,12 @@
         .main-content::-webkit-scrollbar {
             width: 6px;
         }
+
         .main-content::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
         }
+
         .main-content::-webkit-scrollbar-thumb {
             background: #ff8c32;
             border-radius: 10px;
@@ -144,14 +147,17 @@
             display: none;
             animation: fadeInUp 0.4s ease;
         }
+
         .tab-content.active {
             display: block;
         }
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
                 transform: translateY(15px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -159,11 +165,13 @@
         }
 
         /* Header & Stats Grid */
-        h1, .tab-header h2 {
+        h1,
+        .tab-header h2 {
             font-weight: 700;
             letter-spacing: -0.3px;
             margin-bottom: 1.5rem;
         }
+
         h1 {
             font-size: 2rem;
             background: linear-gradient(120deg, #ffffff, #ffd6a5);
@@ -253,7 +261,7 @@
             border-radius: 1.5rem;
             overflow-x: auto;
             padding: 0.2rem;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         table {
@@ -282,7 +290,7 @@
 
         /* Status Select & Buttons inside table */
         .status-select {
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             color: white;
             border: 1px solid #ff8c32;
             border-radius: 2rem;
@@ -301,11 +309,13 @@
             cursor: pointer;
             transition: 0.2s;
         }
+
         .btn-danger:hover {
             background: #dc2626;
         }
+
         .btn-sm {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             border: none;
             padding: 0.3rem 0.8rem;
             border-radius: 2rem;
@@ -313,10 +323,12 @@
             cursor: pointer;
             transition: 0.2s;
         }
+
         .btn-sm.edit-room {
             background: #3b82f6;
             color: white;
         }
+
         .btn-sm.edit-room:hover {
             background: #2563eb;
         }
@@ -335,20 +347,30 @@
             justify-content: center;
             z-index: 1000;
         }
+
         .modal-content {
             background: #1e293b;
             border-radius: 2rem;
             width: 550px;
             max-width: 90%;
             padding: 2rem;
-            box-shadow: 0 25px 40px rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,140,50,0.4);
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 140, 50, 0.4);
             animation: fadeInScale 0.2s ease;
         }
+
         @keyframes fadeInScale {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
+
         .modal-content .close {
             float: right;
             font-size: 1.8rem;
@@ -357,16 +379,20 @@
             color: #facc15;
             transition: 0.2s;
         }
+
         .modal-content .close:hover {
             color: #ff8c32;
         }
+
         .modal-content h3 {
             margin-bottom: 1.5rem;
             font-size: 1.5rem;
         }
+
         .form-group {
             margin-bottom: 1rem;
         }
+
         .form-group label {
             display: block;
             margin-bottom: 0.4rem;
@@ -374,7 +400,10 @@
             font-size: 0.85rem;
             color: #cbd5e6;
         }
-        .form-group input, .form-group select, .form-group textarea {
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 0.7rem;
             background: #0f172a;
@@ -383,10 +412,13 @@
             color: white;
             font-family: 'Inter', monospace;
         }
-        .form-group input:focus, .form-group select:focus {
+
+        .form-group input:focus,
+        .form-group select:focus {
             outline: none;
             border-color: #ff8c32;
         }
+
         button[type="submit"] {
             width: 100%;
             margin-top: 1rem;
@@ -399,38 +431,47 @@
                 padding: 1rem 0.5rem;
                 align-items: center;
             }
+
             .sidebar h2 {
                 font-size: 0;
                 gap: 0;
                 justify-content: center;
             }
+
             .sidebar h2 i {
                 font-size: 1.8rem;
             }
+
             .nav-btn span {
                 display: none;
             }
+
             .nav-btn i {
                 margin: 0 auto;
                 width: auto;
                 font-size: 1.4rem;
             }
+
             .main-content {
                 padding: 1rem;
             }
+
             .stats-grid {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="dashboard-container">
         <aside class="sidebar">
             <h2><i class="fas fa-hotel"></i> <span>Hotel Admin</span></h2>
             <nav>
-                <button class="nav-btn active" data-tab="dashboard"><i class="fas fa-chart-line"></i> <span>Dashboard</span></button>
-                <button class="nav-btn" data-tab="bookings"><i class="fas fa-calendar-check"></i> <span>Bookings</span></button>
+                <button class="nav-btn active" data-tab="dashboard"><i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span></button>
+                <button class="nav-btn" data-tab="bookings"><i class="fas fa-calendar-check"></i>
+                    <span>Bookings</span></button>
                 <button class="nav-btn" data-tab="rooms"><i class="fas fa-door-open"></i> <span>Rooms</span></button>
                 <button class="nav-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></button>
             </nav>
@@ -439,7 +480,10 @@
             <div id="dashboardTab" class="tab-content active">
                 <h1><i class="fas fa-chalkboard-user"></i> Dashboard</h1>
                 <div class="stats-grid" id="statsGrid">
-                    <div class="stat-card"><i class="fas fa-spinner fa-pulse"></i><h3>--</h3><p>Loading...</p></div>
+                    <div class="stat-card"><i class="fas fa-spinner fa-pulse"></i>
+                        <h3>--</h3>
+                        <p>Loading...</p>
+                    </div>
                 </div>
             </div>
             <div id="bookingsTab" class="tab-content">
@@ -450,7 +494,16 @@
                 <div class="table-wrapper">
                     <table id="bookingsTable">
                         <thead>
-                            <tr><th>ID</th><th>Customer</th><th>Room</th><th>Check In</th><th>Check Out</th><th>Total</th><th>Status</th><th>Actions</th></tr>
+                            <tr>
+                                <th>ID</th>
+                                <th>Customer</th>
+                                <th>Room</th>
+                                <th>Check In</th>
+                                <th>Check Out</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
@@ -463,7 +516,17 @@
                 </div>
                 <div class="table-wrapper">
                     <table id="roomsTable">
-                        <thead><tr><th>ID</th><th>Number</th><th>Type</th><th>Price/Night</th><th>Status</th><th>Description</th><th>Actions</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Number</th>
+                                <th>Type</th>
+                                <th>Price/Night</th>
+                                <th>Status</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -473,12 +536,19 @@
 
     <!-- Modals -->
     <div id="bookingModal" class="modal">
-        <div class="modal-content"><span class="close">&times;</span><h3>📅 Add / Edit Booking</h3><form id="bookingForm"></form></div>
+        <div class="modal-content"><span class="close">&times;</span>
+            <h3>📅 Add / Edit Booking</h3>
+            <form id="bookingForm"></form>
+        </div>
     </div>
     <div id="roomModal" class="modal">
-        <div class="modal-content"><span class="close">&times;</span><h3>🛏️ Add / Edit Room</h3><form id="roomForm"></form></div>
+        <div class="modal-content"><span class="close">&times;</span>
+            <h3>🛏️ Add / Edit Room</h3>
+            <form id="roomForm"></form>
+        </div>
     </div>
 
     <script src="js/script.js"></script>
 </body>
+
 </html>
