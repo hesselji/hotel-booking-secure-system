@@ -286,7 +286,7 @@ if (window.location.pathname.includes('dashboard.html')) {
     // --- Logout
     async function logout() {
         await apiCall('logout', 'POST');
-        window.location.href = 'index.html';
+        window.location.href = 'login admin.html';
     }
 
     // --- Tab Switching
@@ -327,6 +327,7 @@ if (window.location.pathname.includes('dashboard.html')) {
     // --- Event listeners for add buttons & modals close
     document.getElementById('addBookingBtn')?.addEventListener('click', openAddBookingModal);
     document.getElementById('addRoomBtn')?.addEventListener('click', () => openRoomModal(null));
+    document.getElementById('logoutBtn')?.addEventListener('click', logout);
     document.querySelectorAll('.close, .modal').forEach(el => {
         el.addEventListener('click', function(e) {
             if (e.target.classList.contains('close') || e.target.classList.contains('modal')) {
