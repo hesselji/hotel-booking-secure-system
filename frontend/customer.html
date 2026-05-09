@@ -1176,13 +1176,10 @@
 
 <script>
 // ============================================================
-// DATA LAYER — Simulasi API Backend (integrasi via PHP/SQL)
-// Dalam produksi, ganti fetch() ke endpoint server PHP/Node.js
+// DATA LAYER — Simulasi localStorage (mirip DS1/DS2/DS3)
+// Dalam produksi, ganti dengan fetch() ke endpoint PHP/Node.js
 // ============================================================
 
-const API_BASE = './api'; // Ubah ke URL backend Anda
-
-// Storage Keys
 const STORE = {
   users: 'luxe_cust_users',
   rooms: 'luxe_cust_rooms',
@@ -1195,46 +1192,66 @@ let currentUser = null;
 let selectedPaymentMethod = null;
 let pendingBooking = null;
 
+// ─── Storage Helpers ──────────────────────────────────────────
+function ls(k) {
+  try { return JSON.parse(localStorage.getItem(k)); } catch { return null; }
+}
+function save(k, v) {
+  localStorage.setItem(k, JSON.stringify(v));
+}
+function getUsers()        { return ls(STORE.users)        || []; }
+function getRooms()        { return ls(STORE.rooms)        || []; }
+function getBookings()     { return ls(STORE.bookings)     || []; }
+function getTransactions() { return ls(STORE.transactions) || []; }
+
 // ─── Init Default Data ────────────────────────────────────────
+// PERBAIKAN: Selalu pastikan demo user ada, tanpa menghapus user lain
 function initData() {
-  if(!ls(STORE.users)) {
-    save(STORE.users, [
-      { id:'u_demo', email:'customer@demo.com', password:'pass123', name:'Budi Santoso', role:'customer', phone:'08123456789', id_number:'3201234567890001', joinedAt: '2024-01-15' }
-    ]);
-  }
-  if(!ls(STORE.rooms)) {
+  // Rooms — hanya buat jika belum ada sama sekali
+  if (!ls(STORE.rooms)) {
     save(STORE.rooms, [
-      { id:'rm_std', type:'Standard Room', pricePerNight:500000, stock:10, description:'Kamar nyaman dengan AC, TV LED, dan kamar mandi privat', emoji:'🛏️' },
-      { id:'rm_dlx', type:'Deluxe Room', pricePerNight:850000, stock:6, description:'Pemandangan kota, bathtub, minibar, dan layanan kamar 24 jam', emoji:'✨' },
-      { id:'rm_suite', type:'Suite Room', pricePerNight:1500000, stock:3, description:'Ruang tamu terpisah, VIP service, panoramic view, butler pribadi', emoji:'👑' },
-      { id:'rm_fam', type:'Family Room', pricePerNight:1100000, stock:4, description:'Cocok untuk keluarga, 2 kamar tidur, dapur kecil, ruang bermain', emoji:'🏠' }
+      { id:'rm_std',   type:'Standard Room', pricePerNight:500000,  stock:10, description:'Kamar nyaman dengan AC, TV LED, dan kamar mandi privat',                 emoji:'🛏️' },
+      { id:'rm_dlx',   type:'Deluxe Room',   pricePerNight:850000,  stock:6,  description:'Pemandangan kota, bathtub, minibar, dan layanan kamar 24 jam',           emoji:'✨' },
+      { id:'rm_suite', type:'Suite Room',     pricePerNight:1500000, stock:3,  description:'Ruang tamu terpisah, VIP service, panoramic view, butler pribadi',      emoji:'👑' },
+      { id:'rm_fam',   type:'Family Room',    pricePerNight:1100000, stock:4,  description:'Cocok untuk keluarga, 2 kamar tidur, dapur kecil, ruang bermain',       emoji:'🏠' }
     ]);
   }
-  if(!ls(STORE.bookings)) save(STORE.bookings, []);
-  if(!ls(STORE.transactions)) save(STORE.transactions, []);
+
+  // Users — pastikan demo user selalu ada
+  let users = ls(STORE.users) || [];
+  const demoExists = users.some(u => u.email === 'customer@demo.com');
+  if (!demoExists) {
+    users.unshift({
+      id: 'u_demo',
+      email: 'customer@demo.com',
+      password: 'pass123',
+      name: 'Budi Santoso',
+      role: 'customer',
+      phone: '08123456789',
+      id_number: '3201234567890001',
+      joined_at: '2024-01-15'
+    });
+    save(STORE.users, users);
+  }
+
+  if (!ls(STORE.bookings))     save(STORE.bookings, []);
+  if (!ls(STORE.transactions)) save(STORE.transactions, []);
 }
 
-function ls(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }
-function save(k,v) { localStorage.setItem(k, JSON.stringify(v)); }
-function getUsers() { return ls(STORE.users)||[]; }
-function getRooms() { return ls(STORE.rooms)||[]; }
-function getBookings() { return ls(STORE.bookings)||[]; }
-function getTransactions() { return ls(STORE.transactions)||[]; }
-
 // ─── Toast ────────────────────────────────────────────────────
-function toast(msg, type='info') {
+function toast(msg, type = 'info') {
   let t = document.querySelector('.toast');
-  if(t) t.remove();
+  if (t) t.remove();
   t = document.createElement('div');
   t.className = `toast ${type}`;
   const icons = { success:'fa-check-circle', error:'fa-exclamation-triangle', info:'fa-info-circle' };
-  t.innerHTML = `<i class="fas ${icons[type]||icons.info}" style="color:${type==='error'?'var(--red)':type==='success'?'var(--green)':'var(--gold)'}"></i> ${msg}`;
+  t.innerHTML = `<i class="fas ${icons[type] || icons.info}" style="color:${type==='error'?'var(--red)':type==='success'?'var(--green)':'var(--gold)'}"></i> ${msg}`;
   document.body.appendChild(t);
   setTimeout(() => t.classList.add('show'), 10);
-  setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(), 300); }, 3000);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
 }
 
-// ─── Auth: P1.0 Login/Register ───────────────────────────────
+// ─── Tab Switcher (Login / Register) ─────────────────────────
 document.getElementById('showLoginBtn').addEventListener('click', () => {
   document.getElementById('loginPanel').style.display = 'block';
   document.getElementById('registerPanel').style.display = 'none';
@@ -1248,59 +1265,100 @@ document.getElementById('showRegisterBtn').addEventListener('click', () => {
   document.getElementById('showLoginBtn').classList.remove('active');
 });
 
-document.getElementById('loginSubmitBtn').addEventListener('click', () => {
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass = document.getElementById('loginPassword').value;
-  if(!email || !pass) { toast('Isi email dan kata sandi', 'error'); return; }
+// ─── Login (P1.0) ─────────────────────────────────────────────
+document.getElementById('loginSubmitBtn').addEventListener('click', doLogin);
+document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('loginPassword').value;
+  if (!email || !pass) { toast('Isi email dan kata sandi', 'error'); return; }
+
   const users = getUsers();
-  const user = users.find(u => u.email === email && u.password === pass && u.role === 'customer');
-  if(!user) { toast('Email atau kata sandi salah', 'error'); return; }
-  // P1.0: Validasi berhasil → simpan sesi → token autentikasi
+  // PERBAIKAN: bandingkan email case-insensitive
+  const user  = users.find(u => u.email.toLowerCase() === email && u.password === pass && u.role === 'customer');
+  if (!user) { toast('Email atau kata sandi salah', 'error'); return; }
+
+  // P1.0: Validasi berhasil → simpan sesi
   currentUser = user;
   save(STORE.session, { id: user.id });
   loginSuccess();
-});
+}
 
-document.getElementById('registerSubmitBtn').addEventListener('click', () => {
-  const name = document.getElementById('regName').value.trim();
-  const email = document.getElementById('regEmail').value.trim();
-  const phone = document.getElementById('regPhone').value.trim();
-  const idNum = document.getElementById('regIdNumber').value.trim();
-  const pass = document.getElementById('regPassword').value;
-  if(!name || !email || !pass) { toast('Nama, email, dan kata sandi wajib diisi', 'error'); return; }
+// ─── Register (P1.0) ──────────────────────────────────────────
+document.getElementById('registerSubmitBtn').addEventListener('click', doRegister);
+document.getElementById('regPassword').addEventListener('keydown', e => { if (e.key === 'Enter') doRegister(); });
+
+function doRegister() {
+  const name   = document.getElementById('regName').value.trim();
+  const email  = document.getElementById('regEmail').value.trim().toLowerCase();
+  const phone  = document.getElementById('regPhone').value.trim();
+  const idNum  = document.getElementById('regIdNumber').value.trim();
+  const pass   = document.getElementById('regPassword').value;
+
+  // Validasi input
+  if (!name)  { toast('Nama lengkap wajib diisi', 'error'); return; }
+  if (!email) { toast('Email wajib diisi', 'error'); return; }
+  if (!pass)  { toast('Kata sandi wajib diisi', 'error'); return; }
+  if (pass.length < 6) { toast('Kata sandi minimal 6 karakter', 'error'); return; }
+
+  // Cek format email sederhana
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    toast('Format email tidak valid', 'error'); return;
+  }
+
   const users = getUsers();
-  if(users.find(u => u.email === email)) { toast('Email sudah terdaftar', 'error'); return; }
+  // PERBAIKAN: cek duplikat email case-insensitive
+  if (users.find(u => u.email.toLowerCase() === email)) {
+    toast('Email sudah terdaftar, silakan login', 'error'); return;
+  }
+
   // P1.0: Registrasi → simpan ke DS1 Database User
   const newUser = {
     id: 'u_' + Date.now(),
-    email, password: pass, name, role: 'customer',
-    phone, id_number: idNum,
-    joinedAt: new Date().toISOString().split('T')[0]
+    email,
+    password: pass,
+    name,
+    role: 'customer',
+    phone:     phone  || null,
+    id_number: idNum  || null,
+    joined_at: new Date().toISOString().split('T')[0]
   };
   users.push(newUser);
   save(STORE.users, users);
-  toast('Registrasi berhasil! Silakan login.', 'success');
-  document.getElementById('showLoginBtn').click();
-});
 
+  // PERBAIKAN: Auto-login langsung setelah registrasi berhasil
+  currentUser = newUser;
+  save(STORE.session, { id: newUser.id });
+  toast('Registrasi berhasil! Selamat datang, ' + name, 'success');
+  loginSuccess();
+}
+
+// ─── Login Success ────────────────────────────────────────────
 function loginSuccess() {
   document.getElementById('loginContainer').style.display = 'none';
   document.getElementById('dashboardContainer').style.display = 'block';
+  // Bersihkan form login
+  document.getElementById('loginEmail').value    = '';
+  document.getElementById('loginPassword').value = '';
   renderDashboard();
 }
 
+// ─── Logout ───────────────────────────────────────────────────
 function logout() {
   currentUser = null;
   localStorage.removeItem(STORE.session);
   document.getElementById('dashboardContainer').style.display = 'none';
   document.getElementById('loginContainer').style.display = 'flex';
+  // Reset ke tab login
+  document.getElementById('showLoginBtn').click();
   toast('Anda telah keluar', 'info');
 }
 document.getElementById('logoutBtn').addEventListener('click', logout);
 
 // ─── Dashboard Render ─────────────────────────────────────────
 function renderDashboard() {
-  document.getElementById('welcomeName').textContent = currentUser.name;
+  document.getElementById('welcomeName').textContent    = currentUser.name;
   document.getElementById('sidebarUserName').textContent = currentUser.name;
   populateRoomSelect();
   setToday();
@@ -1308,18 +1366,21 @@ function renderDashboard() {
 }
 
 function setToday() {
-  const today = new Date();
+  const today    = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  document.getElementById('searchCheckin').min = today.toISOString().split('T')[0];
-  document.getElementById('searchCheckout').min = tomorrow.toISOString().split('T')[0];
-  document.getElementById('searchCheckin').value = today.toISOString().split('T')[0];
-  document.getElementById('searchCheckout').value = tomorrow.toISOString().split('T')[0];
+  const todayStr    = today.toISOString().split('T')[0];
+  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+  document.getElementById('searchCheckin').min   = todayStr;
+  document.getElementById('searchCheckout').min  = tomorrowStr;
+  document.getElementById('searchCheckin').value  = todayStr;
+  document.getElementById('searchCheckout').value = tomorrowStr;
 }
 
 function populateRoomSelect() {
   const sel = document.getElementById('searchRoomType');
-  sel.innerHTML = '<option value="">Semua Tipe</option>' + getRooms().map(r => `<option value="${r.type}">${r.type}</option>`).join('');
+  sel.innerHTML = '<option value="">Semua Tipe</option>' +
+    getRooms().map(r => `<option value="${r.type}">${r.type}</option>`).join('');
 }
 
 // ─── Navigation ───────────────────────────────────────────────
@@ -1332,17 +1393,19 @@ function navigateTo(tabId) {
   document.querySelector(`.nav-btn[data-tab="${tabId}"]`)?.classList.add('active');
   document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
   const pane = document.getElementById('tab-' + tabId);
-  if(pane) pane.classList.add('active');
-  // Load data per tab
-  if(tabId === 'home') loadHomeTab();
-  if(tabId === 'mybookings') loadMyBookings();
-  if(tabId === 'profile') loadProfile();
+  if (pane) pane.classList.add('active');
+  if (tabId === 'home')       loadHomeTab();
+  if (tabId === 'mybookings') loadMyBookings();
+  if (tabId === 'profile')    loadProfile();
 }
 
 // ─── Home Tab ─────────────────────────────────────────────────
 function loadHomeTab() {
-  const myBookings = getBookings().filter(b => b.customerEmail === currentUser.email);
-  const paid = myBookings.filter(b => b.paymentStatus === 'paid');
+  // PERBAIKAN: filter berdasarkan customer_id, bukan email, sebagai fallback ke email
+  const myBookings = getBookings().filter(b =>
+    b.customerId === currentUser.id || b.customerEmail === currentUser.email
+  );
+  const paid      = myBookings.filter(b => b.paymentStatus === 'paid');
   const totalSpent = paid.reduce((s, b) => s + b.totalPrice, 0);
 
   document.getElementById('homeStats').innerHTML = `
@@ -1365,14 +1428,16 @@ function loadHomeTab() {
   `;
 
   // Update booking badge
-  if(myBookings.length > 0) {
-    const badge = document.getElementById('bookingBadge');
+  const badge = document.getElementById('bookingBadge');
+  if (myBookings.length > 0) {
     badge.style.display = 'inline';
     badge.textContent = myBookings.length;
+  } else {
+    badge.style.display = 'none';
   }
 
   // Recent bookings
-  if(myBookings.length > 0) {
+  if (myBookings.length > 0) {
     document.getElementById('recentBookingsSection').style.display = 'block';
     const recent = myBookings.slice(-3).reverse();
     document.getElementById('recentBookingsList').innerHTML = recent.map(b => `
@@ -1383,20 +1448,25 @@ function loadHomeTab() {
         </div>
         <div style="text-align:right;">
           <p style="color:var(--gold); font-weight:600; font-size:0.88rem;">${formatRupiah(b.totalPrice)}</p>
-          ${b.paymentStatus === 'paid' ? '<span class="badge-paid">Lunas</span>' : '<span class="badge-pending">Pending</span>'}
+          ${b.paymentStatus === 'paid'
+            ? '<span class="badge-paid">Lunas</span>'
+            : '<span class="badge-pending">Pending</span>'}
         </div>
       </div>
     `).join('');
+  } else {
+    document.getElementById('recentBookingsSection').style.display = 'none';
   }
 }
 
 // ─── Search & Booking (P2.0) ──────────────────────────────────
-document.getElementById('searchCheckin').addEventListener('change', function() {
+document.getElementById('searchCheckin').addEventListener('change', function () {
   const next = new Date(this.value);
   next.setDate(next.getDate() + 1);
-  document.getElementById('searchCheckout').min = next.toISOString().split('T')[0];
-  if(document.getElementById('searchCheckout').value <= this.value) {
-    document.getElementById('searchCheckout').value = next.toISOString().split('T')[0];
+  const nextStr = next.toISOString().split('T')[0];
+  document.getElementById('searchCheckout').min = nextStr;
+  if (document.getElementById('searchCheckout').value <= this.value) {
+    document.getElementById('searchCheckout').value = nextStr;
   }
 });
 
@@ -1405,31 +1475,31 @@ document.getElementById('doSearchBtn').addEventListener('click', searchRooms);
 function isRoomAvailable(roomId, checkin, checkout) {
   const bookings = getBookings();
   return !bookings.some(b =>
-    b.roomId === roomId && b.paymentStatus === 'paid' &&
-    new Date(checkin) < new Date(b.checkoutDate) &&
+    b.roomId === roomId &&
+    b.paymentStatus === 'paid' &&
+    new Date(checkin)  < new Date(b.checkoutDate) &&
     new Date(checkout) > new Date(b.checkinDate)
   );
 }
 
 function searchRooms() {
-  const checkin = document.getElementById('searchCheckin').value;
+  const checkin  = document.getElementById('searchCheckin').value;
   const checkout = document.getElementById('searchCheckout').value;
   const roomType = document.getElementById('searchRoomType').value;
-  if(!checkin || !checkout) { toast('Pilih tanggal check-in dan check-out', 'error'); return; }
-  if(new Date(checkin) >= new Date(checkout)) { toast('Check-out harus setelah check-in', 'error'); return; }
+  if (!checkin || !checkout) { toast('Pilih tanggal check-in dan check-out', 'error'); return; }
+  if (new Date(checkin) >= new Date(checkout)) { toast('Check-out harus setelah check-in', 'error'); return; }
 
-  // P2.0: Periksa Ketersediaan ke DS2 Database Booking
-  let rooms = getRooms().filter(r =>
+  const nights = Math.ceil((new Date(checkout) - new Date(checkin)) / 86400000);
+  const rooms  = getRooms().filter(r =>
     (roomType ? r.type === roomType : true) &&
     r.stock > 0 &&
     isRoomAvailable(r.id, checkin, checkout)
   );
 
-  const nights = Math.ceil((new Date(checkout) - new Date(checkin)) / 86400000);
   document.getElementById('searchResults').style.display = 'block';
-  document.getElementById('searchEmpty').style.display = rooms.length ? 'none' : 'block';
+  document.getElementById('searchEmpty').style.display   = rooms.length ? 'none' : 'block';
 
-  if(rooms.length) {
+  if (rooms.length) {
     document.getElementById('roomsGrid').innerHTML = rooms.map(r => `
       <div class="room-card">
         <div class="room-img">
@@ -1457,8 +1527,6 @@ function searchRooms() {
 function openPaymentModal(room, checkin, checkout, nights) {
   pendingBooking = { room, checkin, checkout, nights, total: room.pricePerNight * nights };
   selectedPaymentMethod = null;
-
-  // Reset method selection
   document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('selected'));
 
   document.getElementById('modalSummary').innerHTML = `
@@ -1486,7 +1554,7 @@ document.getElementById('cancelPaymentBtn').addEventListener('click', () => {
 });
 
 document.getElementById('confirmPaymentBtn').addEventListener('click', () => {
-  if(!selectedPaymentMethod) { toast('Pilih metode pembayaran', 'error'); return; }
+  if (!selectedPaymentMethod) { toast('Pilih metode pembayaran', 'error'); return; }
   processPayment();
 });
 
@@ -1496,59 +1564,60 @@ function processPayment() {
   document.getElementById('processingContent').style.display = 'block';
   document.getElementById('voucherContent').style.display = 'none';
 
-  // Simulasi Payment Gateway callback (P3.0)
-  const guests = parseInt(document.getElementById('guestCount').value) || 1;
+  const guests    = parseInt(document.getElementById('guestCount').value) || 1;
   const bookingId = 'BK' + Date.now();
 
   // Step 1: Simpan booking status pending → DS2
   const newBooking = {
-    id: bookingId,
-    customerEmail: currentUser.email,
-    customerName: currentUser.name,
-    roomId: pendingBooking.room.id,
-    roomType: pendingBooking.room.type,
-    checkinDate: pendingBooking.checkin,
-    checkoutDate: pendingBooking.checkout,
-    nights: pendingBooking.nights,
+    id:             bookingId,
+    customerId:     currentUser.id,       // PERBAIKAN: simpan juga customerId
+    customerEmail:  currentUser.email,
+    customerName:   currentUser.name,
+    roomId:         pendingBooking.room.id,
+    roomType:       pendingBooking.room.type,
+    checkinDate:    pendingBooking.checkin,
+    checkoutDate:   pendingBooking.checkout,
+    nights:         pendingBooking.nights,
     guests,
-    totalPrice: pendingBooking.total,
-    paymentStatus: 'pending',
+    totalPrice:     pendingBooking.total,
+    paymentStatus:  'pending',
     metodePembayaran: selectedPaymentMethod,
-    e_voucher: null,
-    createdAt: new Date().toISOString()
+    e_voucher:      null,
+    createdAt:      new Date().toISOString()
   };
   const bookings = getBookings();
   bookings.push(newBooking);
   save(STORE.bookings, bookings);
 
-  // Step 2: Simulasi callback payment gateway → update status
+  // Step 2: Simulasi callback payment gateway (2 detik)
   setTimeout(() => {
     const allBookings = getBookings();
     const idx = allBookings.findIndex(b => b.id === bookingId);
-    if(idx !== -1) {
+    if (idx !== -1) {
       const voucher = 'EV-' + bookingId.slice(-8).toUpperCase();
       allBookings[idx].paymentStatus = 'paid';
-      allBookings[idx].e_voucher = voucher;
+      allBookings[idx].e_voucher     = voucher;
       save(STORE.bookings, allBookings);
 
-      // Step 3: Record transaksi → DS3 Database Transaksi
+      // Step 3: Record transaksi → DS3
       const transactions = getTransactions();
       transactions.push({
-        id: 'TRX' + Date.now(),
+        id:           'TRX' + Date.now(),
         bookingId,
+        customerId:   currentUser.id,
         customerEmail: currentUser.email,
-        amount: pendingBooking.total,
-        method: selectedPaymentMethod,
-        status: 'SUCCESS',
-        e_voucher: voucher,
-        date: new Date().toISOString()
+        amount:       pendingBooking.total,
+        method:       selectedPaymentMethod,
+        status:       'SUCCESS',
+        e_voucher:    voucher,
+        date:         new Date().toISOString()
       });
       save(STORE.transactions, transactions);
 
       // Step 4: Tampilkan E-Voucher
       document.getElementById('voucherCode').textContent = voucher;
       document.getElementById('processingContent').style.display = 'none';
-      document.getElementById('voucherContent').style.display = 'block';
+      document.getElementById('voucherContent').style.display    = 'block';
     }
   }, 2000);
 }
@@ -1562,10 +1631,13 @@ document.getElementById('closeVoucherBtn').addEventListener('click', () => {
 
 // ─── My Bookings (DS2) ────────────────────────────────────────
 function loadMyBookings() {
-  const myBookings = getBookings().filter(b => b.customerEmail === currentUser.email);
+  // PERBAIKAN: filter by customerId ATAU email (backward-compatible)
+  const myBookings = getBookings().filter(b =>
+    b.customerId === currentUser.id || b.customerEmail === currentUser.email
+  );
   const tbody = document.getElementById('myBookingsBody');
 
-  if(!myBookings.length) {
+  if (!myBookings.length) {
     tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:2.5rem;">Belum ada booking. Cari kamar sekarang!</td></tr>';
     return;
   }
@@ -1578,7 +1650,9 @@ function loadMyBookings() {
       <td>${b.checkoutDate}</td>
       <td>${b.guests || 1}</td>
       <td style="color:var(--gold); font-weight:600;">${formatRupiah(b.totalPrice)}</td>
-      <td>${b.paymentStatus === 'paid' ? '<span class="badge-paid">✓ Lunas</span>' : '<span class="badge-pending">⏳ Pending</span>'}</td>
+      <td>${b.paymentStatus === 'paid'
+            ? '<span class="badge-paid">✓ Lunas</span>'
+            : '<span class="badge-pending">⏳ Pending</span>'}</td>
       <td>${b.e_voucher ? `<span class="voucher-small">${b.e_voucher}</span>` : '–'}</td>
       <td style="color:var(--text-muted); font-size:0.78rem;">${b.metodePembayaran || '–'}</td>
     </tr>
@@ -1586,50 +1660,61 @@ function loadMyBookings() {
 }
 
 document.getElementById('cancelAllBtn').addEventListener('click', () => {
-  if(!confirm('Hapus semua booking Anda? Tindakan ini tidak bisa dibatalkan.')) return;
-  const remaining = getBookings().filter(b => b.customerEmail !== currentUser.email);
+  if (!confirm('Hapus semua booking Anda? Tindakan ini tidak bisa dibatalkan.')) return;
+  const remaining = getBookings().filter(b =>
+    b.customerId !== currentUser.id && b.customerEmail !== currentUser.email
+  );
   save(STORE.bookings, remaining);
   loadMyBookings();
+  loadHomeTab();
   toast('Semua booking dihapus', 'info');
 });
 
 // ─── Profile (DS1) ────────────────────────────────────────────
 function loadProfile() {
-  document.getElementById('profileName').textContent = currentUser.name;
-  document.getElementById('profileEmail').textContent = currentUser.email;
-  document.getElementById('profilePhone').textContent = currentUser.phone || '–';
-  document.getElementById('profileIdNumber').textContent = currentUser.id_number || '–';
-  document.getElementById('profileJoined').textContent = currentUser.joinedAt || '–';
+  document.getElementById('profileName').textContent     = currentUser.name;
+  document.getElementById('profileEmail').textContent    = currentUser.email;
+  document.getElementById('profilePhone').textContent    = currentUser.phone     || '–';
+  // PERBAIKAN: support kedua field name (id_number)
+  document.getElementById('profileIdNumber').textContent = currentUser.id_number || currentUser.idNumber || '–';
+  // PERBAIKAN: support kedua field name (joined_at vs joinedAt)
+  document.getElementById('profileJoined').textContent   = currentUser.joined_at || currentUser.joinedAt || '–';
 
-  const myBookings = getBookings().filter(b => b.customerEmail === currentUser.email);
-  const paid = myBookings.filter(b => b.paymentStatus === 'paid');
+  const myBookings = getBookings().filter(b =>
+    b.customerId === currentUser.id || b.customerEmail === currentUser.email
+  );
+  const paid    = myBookings.filter(b => b.paymentStatus === 'paid');
   const pending = myBookings.filter(b => b.paymentStatus !== 'paid');
-  const spent = paid.reduce((s, b) => s + b.totalPrice, 0);
+  const spent   = paid.reduce((s, b) => s + b.totalPrice, 0);
 
-  document.getElementById('profileTotal').textContent = myBookings.length;
-  document.getElementById('profilePaid').textContent = paid.length;
+  document.getElementById('profileTotal').textContent   = myBookings.length;
+  document.getElementById('profilePaid').textContent    = paid.length;
   document.getElementById('profilePending').textContent = pending.length;
-  document.getElementById('profileSpent').textContent = formatRupiah(spent);
+  document.getElementById('profileSpent').textContent   = formatRupiah(spent);
 }
 
 // ─── Helpers ──────────────────────────────────────────────────
 function formatRupiah(n) {
-  return 'Rp ' + n.toLocaleString('id-ID');
+  return 'Rp ' + Number(n).toLocaleString('id-ID');
 }
 
 // ─── Init ─────────────────────────────────────────────────────
 window.onload = () => {
   initData();
+  // Cek sesi tersimpan
   const session = ls(STORE.session);
-  if(session) {
+  if (session && session.id) {
     const user = getUsers().find(u => u.id === session.id && u.role === 'customer');
-    if(user) {
+    if (user) {
       currentUser = user;
       document.getElementById('loginContainer').style.display = 'none';
       document.getElementById('dashboardContainer').style.display = 'block';
       renderDashboard();
+      return;
     }
   }
+  // Tidak ada sesi valid — tampilkan login
+  document.getElementById('loginContainer').style.display = 'flex';
 };
 </script>
 </body>
