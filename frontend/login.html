@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LuxeBooking · Autentikasi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --gold-dim: rgba(201,168,76,0.15);
+      --onyx: #0a0b0f;
+      --onyx-2: #111318;
+      --onyx-3: #181b22;
+      --glass-border: rgba(201,168,76,0.2);
+      --text-primary: #f0ead8;
+      --text-muted: #8a8a9a;
+      --green: #4caf82;
+      --red: #e05c5c;
+      --font-display: 'Cormorant Garamond', serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--onyx);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% -10%, rgba(201,168,76,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(201,168,76,0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .login-card {
+      position: relative;
+      width: 460px;
+      max-width: 94vw;
+      background: var(--onyx-3);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 2.8rem 2.5rem;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(201,168,76,0.15);
+      animation: cardIn 0.6s cubic-bezier(0.16,1,0.3,1);
+      z-index: 1;
+    }
+
+    @keyframes cardIn {
+      from { opacity:0; transform: translateY(30px) scale(0.97); }
+      to { opacity:1; transform: translateY(0) scale(1); }
+    }
+
+    .login-logo { text-align: center; margin-bottom: 2rem; }
+    .login-logo .crest {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, var(--gold), #e8c97a);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem; font-size: 1.5rem; color: var(--onyx);
+      box-shadow: 0 0 30px rgba(201,168,76,0.4);
+    }
+    .login-logo h1 { font-family: var(--font-display); font-size: 2rem; font-weight: 700; letter-spacing: 1px; }
+    .login-logo p { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 3px; text-transform: uppercase; margin-top: 0.3rem; }
+
+    .tab-switcher {
+      display: flex; background: var(--onyx-2); border-radius: 12px; padding: 4px; margin-bottom: 1.8rem; border: 1px solid rgba(255,255,255,0.06);
+    }
+    .tab-switcher button {
+      flex: 1; padding: 0.6rem; background: transparent; border: none; border-radius: 9px;
+      color: var(--text-muted); font-family: var(--font-body); font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.25s;
+    }
+    .tab-switcher button.active {
+      background: linear-gradient(135deg, var(--gold), #b8923e); color: var(--onyx); font-weight: 600; box-shadow: 0 2px 12px rgba(201,168,76,0.3);
+    }
+
+    .form-field { position: relative; margin-bottom: 1rem; }
+    .form-field i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem; pointer-events: none; }
+    .form-field input {
+      width: 100%; background: var(--onyx-2); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+      padding: 0.75rem 1rem 0.75rem 2.6rem; color: var(--text-primary); font-family: var(--font-body); font-size: 0.9rem; transition: border-color 0.2s; outline: none;
+    }
+    .form-field input:focus { border-color: var(--gold); }
+    .form-field input::placeholder { color: var(--text-muted); }
+
+    .btn-gold {
+      width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #c9a84c, #b8923e); border: none; border-radius: 12px;
+      color: var(--onyx); font-family: var(--font-body); font-size: 0.95rem; font-weight: 700; cursor: pointer; letter-spacing: 0.5px;
+      transition: all 0.25s; box-shadow: 0 4px 20px rgba(201,168,76,0.3); margin-top: 0.5rem;
+    }
+    .btn-gold:hover { background: linear-gradient(135deg, #e8c97a, #c9a84c); transform: translateY(-1px); box-shadow: 0 8px 28px rgba(201,168,76,0.4); }
+
+    .demo-hint { text-align: center; margin-top: 1.2rem; padding: 0.7rem; background: var(--gold-dim); border-radius: 10px; font-size: 0.75rem; color: var(--text-muted); border: 1px solid rgba(201,168,76,0.1); }
+    .demo-hint span { color: var(--gold); font-weight: 600; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--onyx-3); border-left: 3px solid var(--gold); padding: 0.9rem 1.5rem; border-radius: 50px;
+      color: var(--text-primary); font-size: 0.85rem; z-index: 2000; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      opacity: 0; transition: all 0.3s ease; white-space: nowrap; display: flex; align-items: center; gap: 0.7rem;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.error { border-left-color: var(--red); }
+    .toast.success { border-left-color: var(--green); }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="crest"><i class="fas fa-gem"></i></div>
+      <h1>LuxeBooking</h1>
+      <p>Authentication Portal</p>
+    </div>
+    
+    <div class="tab-switcher">
+      <button id="showLoginBtn" class="active">Masuk</button>
+      <button id="showRegisterBtn">Daftar (Tamu)</button>
+    </div>
+
+    <!-- Login Form (Mendukung Customer & Admin) -->
+    <div id="loginPanel">
+      <div class="form-field"><i class="fas fa-envelope"></i><input type="email" id="loginEmail" placeholder="Alamat Email" required></div>
+      <div class="form-field"><i class="fas fa-lock"></i><input type="password" id="loginPassword" placeholder="Kata Sandi" required></div>
+      <button id="loginSubmitBtn" class="btn-gold"><i class="fas fa-sign-in-alt"></i> Masuk</button>
+    </div>
+
+    <!-- Register Form (Khusus Customer) -->
+    <div id="registerPanel" style="display:none;">
+      <div class="form-field"><i class="fas fa-user"></i><input type="text" id="regName" placeholder="Nama Lengkap" required></div>
+      <div class="form-field"><i class="fas fa-envelope"></i><input type="email" id="regEmail" placeholder="Alamat Email" required></div>
+      <div class="form-field"><i class="fas fa-phone"></i><input type="tel" id="regPhone" placeholder="Nomor Telepon"></div>
+      <div class="form-field"><i class="fas fa-id-card"></i><input type="text" id="regIdNumber" placeholder="No. KTP / Passport"></div>
+      <div class="form-field"><i class="fas fa-lock"></i><input type="password" id="regPassword" placeholder="Kata Sandi" required></div>
+      <button id="registerSubmitBtn" class="btn-gold"><i class="fas fa-user-plus"></i> Buat Akun</button>
+    </div>
+
+    <div class="demo-hint">
+      Tamu: <span>customer@demo.com</span> | <span>pass123</span><br>
+      Admin: <span>admin@luxe.com</span> | <span>admin</span>
+    </div>
+  </div>
+
+<script>
+const STORE = { users: 'luxe_cust_users', session: 'luxe_cust_session' };
+
+function ls(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }
+function save(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+function getUsers() { return ls(STORE.users) || []; }
+
+function initData() {
+  let users = getUsers();
+  let updated = false;
+  
+  // Data Tamu Demo
+  if (!users.some(u => u.email === 'customer@demo.com')) {
+    users.unshift({ id: 'u_demo', email: 'customer@demo.com', password: 'pass123', name: 'Budi Santoso', role: 'customer', phone: '08123456789', id_number: '3201234567890001', joined_at: '2024-01-15' });
+    updated = true;
+  }
+  // Data Admin Demo
+  if (!users.some(u => u.email === 'admin@luxe.com')) {
+    users.unshift({ id: 'u_admin_001', email: 'admin@luxe.com', password: 'admin', name: 'Admin Luxe', role: 'admin', phone: '02112345678', joined_at: '2024-01-01' });
+    updated = true;
+  }
+  if (updated) save(STORE.users, users);
+}
+
+function toast(msg, type = 'info') {
+  let t = document.querySelector('.toast');
+  if (t) t.remove();
+  t = document.createElement('div');
+  t.className = `toast ${type}`;
+  const icons = { success:'fa-check-circle', error:'fa-exclamation-triangle', info:'fa-info-circle' };
+  t.innerHTML = `<i class="fas ${icons[type]}"></i> ${msg}`;
+  document.body.appendChild(t);
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// Redirect otomatis jika sudah login
+window.onload = () => {
+  initData();
+  const session = ls(STORE.session);
+  if (session && session.id) {
+    const user = getUsers().find(u => u.id === session.id);
+    if (user) {
+      window.location.href = user.role === 'admin' ? 'admin.html' : 'customer.html';
+    }
+  }
+};
+
+document.getElementById('showLoginBtn').addEventListener('click', () => {
+  document.getElementById('loginPanel').style.display = 'block';
+  document.getElementById('registerPanel').style.display = 'none';
+  document.getElementById('showLoginBtn').classList.add('active');
+  document.getElementById('showRegisterBtn').classList.remove('active');
+});
+
+document.getElementById('showRegisterBtn').addEventListener('click', () => {
+  document.getElementById('loginPanel').style.display = 'none';
+  document.getElementById('registerPanel').style.display = 'block';
+  document.getElementById('showRegisterBtn').classList.add('active');
+  document.getElementById('showLoginBtn').classList.remove('active');
+});
+
+// Proses Login (Mengecek Admin/Customer)
+document.getElementById('loginSubmitBtn').addEventListener('click', doLogin);
+document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('loginPassword').value;
+  if (!email || !pass) return toast('Isi email dan kata sandi', 'error');
+
+  const users = getUsers();
+  // Tidak difilter berdasarkan role di sini, agar admin & customer bisa masuk dari form yang sama
+  const user  = users.find(u => u.email.toLowerCase() === email && u.password === pass);
+  
+  if (!user) return toast('Email atau kata sandi salah', 'error');
+
+  save(STORE.session, { id: user.id });
+  
+  // Routing berdasarkan role
+  if (user.role === 'admin') {
+    window.location.href = 'admin.html';
+  } else {
+    window.location.href = 'customer.html';
+  }
+}
+
+// Proses Registrasi (Khusus Customer)
+document.getElementById('registerSubmitBtn').addEventListener('click', doRegister);
+document.getElementById('regPassword').addEventListener('keydown', e => { if (e.key === 'Enter') doRegister(); });
+
+function doRegister() {
+  const name  = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim().toLowerCase();
+  const phone = document.getElementById('regPhone').value.trim();
+  const idNum = document.getElementById('regIdNumber').value.trim();
+  const pass  = document.getElementById('regPassword').value;
+
+  if (!name || !email || !pass) return toast('Lengkapi data wajib (Nama, Email, Sandi)', 'error');
+  if (pass.length < 6) return toast('Kata sandi minimal 6 karakter', 'error');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast('Format email tidak valid', 'error');
+
+  const users = getUsers();
+  if (users.find(u => u.email.toLowerCase() === email)) {
+    return toast('Email sudah terdaftar, silakan login', 'error');
+  }
+
+  const newUser = {
+    id: 'u_' + Date.now(),
+    email,
+    password: pass,
+    name,
+    role: 'customer', // Paksa role sebagai customer
+    phone: phone || null,
+    id_number: idNum || null,
+    joined_at: new Date().toISOString().split('T')[0]
+  };
+  
+  users.push(newUser);
+  save(STORE.users, users);
+  
+  // === PERBAIKAN: Kembali ke Login ===
+  toast('Registrasi berhasil! Silakan login menggunakan akun Anda.', 'success');
+  
+  // 1. Bersihkan form register
+  document.getElementById('regName').value = '';
+  document.getElementById('regEmail').value = '';
+  document.getElementById('regPhone').value = '';
+  document.getElementById('regIdNumber').value = '';
+  document.getElementById('regPassword').value = '';
+
+  // 2. Otomatis pindah ke tab Login
+  document.getElementById('showLoginBtn').click();
+  
+}
+</script>
+</body>
+</html>
