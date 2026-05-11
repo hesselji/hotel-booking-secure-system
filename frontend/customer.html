@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* Seluruh CSS dari customer.html asli KECUALI bagian ====== LOGIN ====== */
+    /* ====== SELURUH CSS ASLI TIDAK DIUBAH ====== */
     :root {
       --gold: #c9a84c;
       --gold-light: #e8c97a;
@@ -50,10 +50,8 @@
       z-index: 0;
     }
 
-    /* ====== DASHBOARD ====== */
     .dashboard-wrap { display: flex; height: 100vh; position: relative; z-index: 1; }
 
-    /* ====== SIDEBAR ====== */
     .sidebar { width: 270px; background: var(--onyx-2); border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; padding: 2rem 1rem; flex-shrink: 0; }
     .sidebar-brand { display: flex; align-items: center; gap: 0.8rem; padding: 0 0.5rem; margin-bottom: 2rem; }
     .sidebar-brand .icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold), #b8923e); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--onyx); font-size: 1rem; flex-shrink: 0; }
@@ -77,23 +75,19 @@
     #logoutBtn { margin-top: auto; color: var(--red); border-top: 1px solid rgba(255,255,255,0.06); margin-top: 1rem; padding-top: 1rem; }
     #logoutBtn:hover { background: rgba(224,92,92,0.1); color: #ff8080; }
 
-    /* ====== MAIN CONTENT ====== */
     .main-content { flex: 1; overflow-y: auto; padding: 2rem 2.5rem; scroll-behavior: smooth; }
     .main-content::-webkit-scrollbar { width: 5px; }
     .main-content::-webkit-scrollbar-track { background: transparent; }
     .main-content::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
 
-    /* ====== TABS ====== */
     .tab-pane { display: none; animation: fadeUp 0.35s ease; }
     .tab-pane.active { display: block; }
     @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 
-    /* ====== PAGE HEADER ====== */
     .page-header { margin-bottom: 2rem; padding-bottom: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
     .page-header h2 { font-family: var(--font-display); font-size: 2rem; font-weight: 600; color: var(--text-primary); letter-spacing: 0.5px; }
     .page-header p { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem; }
 
-    /* ====== STATS & COMPONENTS ====== */
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.2rem; margin-bottom: 2rem; }
     .stat-card { background: var(--onyx-3); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 1.5rem; position: relative; overflow: hidden; transition: all 0.25s; }
     .stat-card::before { content: ''; position: absolute; top: 0; right: 0; width: 80px; height: 80px; background: radial-gradient(circle, var(--gold-dim) 0%, transparent 70%); pointer-events: none; }
@@ -137,7 +131,6 @@
     .btn-book { width: 100%; padding: 0.65rem; background: var(--gold-dim); border: 1px solid rgba(201,168,76,0.3); border-radius: 10px; color: var(--gold); font-family: var(--font-body); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
     .btn-book:hover { background: linear-gradient(135deg, var(--gold), #b8923e); color: var(--onyx); border-color: transparent; }
 
-    /* ====== MODALS ====== */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 500; display: none; align-items: center; justify-content: center; }
     .modal-overlay.open { display: flex; }
     .modal { width: 520px; max-width: 95vw; background: var(--onyx-3); border: 1px solid var(--glass-border); border-radius: 20px; padding: 2rem; box-shadow: 0 40px 80px rgba(0,0,0,0.6); animation: cardIn 0.35s ease; max-height: 90vh; overflow-y: auto; }
@@ -175,7 +168,6 @@
     .btn-gold { width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #c9a84c, #b8923e); border: none; border-radius: 12px; color: var(--onyx); font-family: var(--font-body); font-size: 0.95rem; font-weight: 700; cursor: pointer; letter-spacing: 0.5px; transition: all 0.25s; box-shadow: 0 4px 20px rgba(201,168,76,0.3); margin-top: 0.5rem; }
     .btn-gold:hover { background: linear-gradient(135deg, #e8c97a, #c9a84c); transform: translateY(-1px); box-shadow: 0 8px 28px rgba(201,168,76,0.4); }
 
-    /* ====== TABLE & PROFILE ====== */
     .table-wrap { background: var(--onyx-3); border: 1px solid var(--glass-border); border-radius: var(--radius); overflow: hidden; }
     table { width: 100%; border-collapse: collapse; }
     th { background: var(--onyx-2); padding: 0.9rem 1rem; text-align: left; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); font-weight: 500; }
@@ -196,9 +188,17 @@
     .info-row span:last-child { color: var(--text-primary); font-weight: 500; }
 
     .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--onyx-3); border-left: 3px solid var(--gold); padding: 0.9rem 1.5rem; border-radius: 50px; color: var(--text-primary); font-size: 0.85rem; z-index: 2000; box-shadow: 0 8px 24px rgba(0,0,0,0.5); opacity: 0; transition: all 0.3s ease; white-space: nowrap; display: flex; align-items: center; gap: 0.7rem; }
+
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     .toast.error { border-left-color: var(--red); }
     .toast.success { border-left-color: var(--green); }
+
+    /* ====== UNIT PICKER (BIOSKOP) ====== */
+    .room-grid-modal { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1.5rem 0; }
+    .room-unit-box { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; background: var(--onyx-2); border: 1px solid rgba(255,255,255,0.08); color: var(--text-muted); }
+    .room-unit-box.available { background: var(--green); color: #fff; border-color: var(--green); }
+    .room-unit-box.unavailable { background: var(--red); color: #fff; border-color: var(--red); cursor: not-allowed; opacity: 0.6; }
+    .room-unit-box.selected { box-shadow: 0 0 0 3px var(--gold); }
 
     @media (max-width: 900px) { .search-grid { grid-template-columns: 1fr 1fr; } .profile-grid { grid-template-columns: 1fr; } }
     @media (max-width: 650px) {
@@ -215,7 +215,13 @@
 </head>
 <body>
 
-<div class="dashboard-wrap">
+<!-- Loading Overlay -->
+<div id="initialLoading" style="position:fixed; inset:0; background:var(--onyx); z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:1.5rem;">
+  <div style="width:60px; height:60px; border:4px solid rgba(201,168,76,0.15); border-top-color:var(--gold); border-radius:50%; animation: spin 0.8s linear infinite;"></div>
+  <p style="color:var(--text-muted); font-size:0.9rem; letter-spacing:2px;">MEMUAT AKUN...</p>
+</div>
+
+<div class="dashboard-wrap" id="dashboardWrap" style="display:none;">
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-brand">
@@ -256,7 +262,6 @@
       <div class="stats-grid" id="homeStats"></div>
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-        
         <div style="background: linear-gradient(135deg, rgba(201,168,76,0.15), rgba(10,11,15,0.8)); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 1.8rem; position: relative; overflow: hidden;">
           <div style="position: absolute; top: -20px; right: -20px; font-size: 8rem; opacity: 0.05; color: var(--gold); pointer-events: none;"><i class="fas fa-gem"></i></div>
           <h3 style="font-family: var(--font-display); font-size: 1.4rem; color: var(--gold); margin-bottom: 0.5rem;"><i class="fas fa-sparkles" style="font-size:1rem;"></i> Penawaran Eksklusif</h3>
@@ -271,7 +276,6 @@
         <div style="background: var(--onyx-3); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 1.8rem;">
           <h3 style="font-family: var(--font-display); font-size: 1.4rem; color: var(--text-primary); margin-bottom: 1.2rem;">Akses Cepat</h3>
           <div style="display: flex; flex-direction: column; gap: 0.8rem;">
-            
             <div style="display: flex; align-items: center; gap: 1rem; padding: 0.8rem 1rem; background: var(--onyx-2); border-radius: 12px; cursor: pointer; border: 1px solid transparent; transition: 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='transparent'" onclick="document.querySelector('.nav-btn[data-tab=\'search\']').click()">
               <div style="width: 40px; height: 40px; background: var(--gold-dim); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 1.1rem;"><i class="fas fa-search"></i></div>
               <div>
@@ -279,7 +283,6 @@
                 <span style="font-size: 0.75rem; color: var(--text-muted);">Cari dan pesan kamar untuk jadwal Anda</span>
               </div>
             </div>
-
             <div style="display: flex; align-items: center; gap: 1rem; padding: 0.8rem 1rem; background: var(--onyx-2); border-radius: 12px; cursor: pointer; border: 1px solid transparent; transition: 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='transparent'" onclick="document.querySelector('.nav-btn[data-tab=\'mybookings\']').click()">
               <div style="width: 40px; height: 40px; background: var(--gold-dim); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 1.1rem;"><i class="fas fa-ticket"></i></div>
               <div>
@@ -287,10 +290,8 @@
                 <span style="font-size: 0.75rem; color: var(--text-muted);">Lihat riwayat dan akses tiket *check-in*</span>
               </div>
             </div>
-
           </div>
         </div>
-
       </div>
 
       <div class="flow-section" id="recentBookingsSection" style="display:none;">
@@ -405,7 +406,20 @@
   </main>
 </div>
 
-<!-- ========== PAYMENT MODAL ========== -->
+<!-- Unit Picker Modal (BIOSKOP) -->
+<div class="modal-overlay" id="unitPickerModal">
+  <div class="modal">
+    <h3><i class="fas fa-bed"></i> Pilih Nomor Kamar</h3>
+    <p id="unitPickerInfo" style="margin-bottom:1rem; color:var(--text-muted);"></p>
+    <div class="room-grid-modal" id="unitGrid"></div>
+    <div class="modal-actions" style="margin-top:1rem;">
+      <button class="btn-cancel" id="cancelUnitBtn">Batal</button>
+      <button class="btn-pay" id="confirmUnitBtn" disabled>Konfirmasi Pilihan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Modal -->
 <div class="modal-overlay" id="paymentModal">
   <div class="modal" id="paymentModalContent">
     <h3><i class="fas fa-shield-halved"></i> Konfirmasi Pembayaran</h3>
@@ -437,7 +451,7 @@
   </div>
 </div>
 
-<!-- ========== PROCESSING MODAL ========== -->
+<!-- Processing Modal -->
 <div class="modal-overlay" id="processingModal">
   <div class="modal">
     <div class="processing-modal" id="processingContent">
@@ -458,80 +472,76 @@
 </div>
 
 <script>
-const STORE = {
-  users: 'luxe_cust_users',
-  rooms: 'luxe_cust_rooms',
-  bookings: 'luxe_cust_bookings',
-  transactions: 'luxe_cust_transactions',
-  session: 'luxe_cust_session'
-};
-
+// ================== KONFIGURASI ==================
+const API = '../backend/api.php';
+const token = sessionStorage.getItem('token');
 let currentUser = null;
 let selectedPaymentMethod = null;
-let pendingBooking = null;
+let selectedUnit = null;
+let pendingUnitData = null;
 
-function ls(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }
-function save(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
-function getUsers() { return ls(STORE.users) || []; }
-function getRooms() { return ls(STORE.rooms) || []; }
-function getBookings() { return ls(STORE.bookings) || []; }
-function getTransactions() { return ls(STORE.transactions) || []; }
-
-// Initial Data Loading for Rooms if empty
-if (!ls(STORE.rooms)) {
-  save(STORE.rooms, [
-    { id:'rm_std', type:'Standard Room', pricePerNight:500000, stock:10, description:'Kamar nyaman dengan AC, TV LED, dan kamar mandi privat', emoji:'🛏️' },
-    { id:'rm_dlx', type:'Deluxe Room', pricePerNight:850000, stock:6, description:'Pemandangan kota, bathtub, minibar, dan layanan kamar 24 jam', emoji:'✨' },
-    { id:'rm_suite', type:'Suite Room', pricePerNight:1500000, stock:3, description:'Ruang tamu terpisah, VIP service, panoramic view, butler pribadi', emoji:'👑' },
-    { id:'rm_fam', type:'Family Room', pricePerNight:1100000, stock:4, description:'Cocok untuk keluarga, 2 kamar tidur, dapur kecil, ruang bermain', emoji:'🏠' }
-  ]);
-}
-if (!ls(STORE.bookings)) save(STORE.bookings, []);
-if (!ls(STORE.transactions)) save(STORE.transactions, []);
-
+// ================== FUNGSI UTILITY ==================
 function toast(msg, type = 'info') {
   let t = document.querySelector('.toast');
   if (t) t.remove();
   t = document.createElement('div');
   t.className = `toast ${type}`;
-  const icons = { success:'fa-check-circle', error:'fa-exclamation-triangle', info:'fa-info-circle' };
+  const icons = { success: 'fa-check-circle', error: 'fa-exclamation-triangle', info: 'fa-info-circle' };
   t.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i> ${msg}`;
   document.body.appendChild(t);
   setTimeout(() => t.classList.add('show'), 10);
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
 }
 
-// PROTEKSI HALAMAN (Sesi Check)
-window.onload = () => {
-  const session = ls(STORE.session);
-  if (!session || !session.id) {
-    window.location.href = 'login.html';
-    return;
-  }
-  
-  const user = getUsers().find(u => u.id === session.id);
-  // Jika tidak ditemukan atau bukan customer (misal admin), lemparkan kembali
-  if (!user || user.role !== 'customer') {
-    window.location.href = 'login.html';
-    return;
-  }
-  
-  currentUser = user;
-  renderDashboard();
-};
+function formatRupiah(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
 
-function logout() {
-  localStorage.removeItem(STORE.session);
-  window.location.href = 'login.html';
+async function apiCall(action, data = {}, method = 'POST') {
+  data.token = token;
+  let headers = { 'Content-Type': 'application/json' };
+  let opts = { method, headers };
+  if (method === 'GET') {
+    action += '?' + new URLSearchParams(data);
+    delete opts.body;
+  } else {
+    opts.body = JSON.stringify(data);
+  }
+  try {
+    let res = await fetch(API + '?action=' + action, opts);
+    return res.json();
+  } catch (e) {
+    return { success: false, message: 'Gagal terhubung ke server' };
+  }
 }
-document.getElementById('logoutBtn').addEventListener('click', logout);
 
-// --- DASHBOARD LOGIC KELUARGA ---
-function renderDashboard() {
-  document.getElementById('welcomeName').textContent = currentUser.name;
+// ================== PROTEKSI HALAMAN ==================
+(async function init() {
+  if (!token) {
+    window.location.href = 'login.html';
+    return;
+  }
+  let json = await apiCall('me', {}, 'POST');
+  if (!json.success || json.user.role !== 'customer') {
+    sessionStorage.removeItem('token');
+    window.location.href = 'login.html';
+    return;
+  }
+  currentUser = json.user;
   document.getElementById('sidebarUserName').textContent = currentUser.name;
-  populateRoomSelect();
+  document.getElementById('welcomeName').textContent = currentUser.name;
+  document.getElementById('initialLoading').style.display = 'none';
+  document.getElementById('dashboardWrap').style.display = 'flex';
+  initDashboard();
+})();
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  sessionStorage.removeItem('token');
+  window.location.href = 'login.html';
+});
+
+// ================== DASHBOARD ==================
+function initDashboard() {
   setToday();
+  populateRoomSelect();
   loadHomeTab();
 }
 
@@ -539,27 +549,24 @@ function setToday() {
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const todayStr = today.toISOString().split('T')[0];
-  const tomorrowStr = tomorrow.toISOString().split('T')[0];
-  document.getElementById('searchCheckin').min = todayStr;
-  document.getElementById('searchCheckout').min = tomorrowStr;
-  document.getElementById('searchCheckin').value = todayStr;
-  document.getElementById('searchCheckout').value = tomorrowStr;
+  document.getElementById('searchCheckin').value = today.toISOString().split('T')[0];
+  document.getElementById('searchCheckout').value = tomorrow.toISOString().split('T')[0];
 }
 
-function populateRoomSelect() {
+async function populateRoomSelect() {
+  let json = await apiCall('get_rooms', {}, 'GET');
   const sel = document.getElementById('searchRoomType');
-  sel.innerHTML = '<option value="">Semua Tipe</option>' + getRooms().map(r => `<option value="${r.type}">${r.type}</option>`).join('');
+  sel.innerHTML = '<option value="">Semua Tipe</option>';
+  if (json.success) json.data.forEach(r => sel.innerHTML += `<option value="${r.id}">${r.type}</option>`);
 }
 
-// Navigation Tabs
+// Navigasi Tab
 document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.nav-btn[data-tab]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + btn.getAttribute('data-tab')).classList.add('active');
-    
     const tabId = btn.getAttribute('data-tab');
     if (tabId === 'home') loadHomeTab();
     if (tabId === 'mybookings') loadMyBookings();
@@ -567,30 +574,36 @@ document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
   });
 });
 
-// Home Dashboard Stats
-function loadHomeTab() {
-  const myBookings = getBookings().filter(b => b.customerId === currentUser.id || b.customerEmail === currentUser.email);
-  const paid = myBookings.filter(b => b.paymentStatus === 'paid');
-  const totalSpent = paid.reduce((s, b) => s + b.totalPrice, 0);
+// ================== HOME TAB ==================
+async function loadHomeTab() {
+  let json = await apiCall('get_bookings', {}, 'GET');
+  let myBookings = json.data || [];
+  const paid = myBookings.filter(b => b.payment_status === 'paid');
+  const totalSpent = paid.reduce((s, b) => s + Number(b.total_price), 0);
+
+  // Statistik
+  let roomsJson = await apiCall('get_rooms', {}, 'GET');
+  let totalRoomTypes = roomsJson.data ? roomsJson.data.length : 0;
 
   document.getElementById('homeStats').innerHTML = `
     <div class="stat-card"><div class="stat-icon"><i class="fas fa-calendar-week"></i></div><h3>${myBookings.length}</h3><p>Total Booking</p></div>
     <div class="stat-card"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><h3>${paid.length}</h3><p>Sudah Lunas</p></div>
-    <div class="stat-card"><div class="stat-icon"><i class="fas fa-hotel"></i></div><h3>${getRooms().length}</h3><p>Tipe Kamar</p></div>
+    <div class="stat-card"><div class="stat-icon"><i class="fas fa-hotel"></i></div><h3>${totalRoomTypes}</h3><p>Tipe Kamar</p></div>
     <div class="stat-card"><div class="stat-icon"><i class="fas fa-coins"></i></div><h3 style="font-size:1.4rem">${formatRupiah(totalSpent)}</h3><p>Total Pengeluaran</p></div>
   `;
 
   const badge = document.getElementById('bookingBadge');
-  if (myBookings.length > 0) { badge.style.display = 'inline'; badge.textContent = myBookings.length; } else { badge.style.display = 'none'; }
+  if (myBookings.length > 0) { badge.style.display = 'inline'; badge.textContent = myBookings.length; }
+  else badge.style.display = 'none';
 
   if (myBookings.length > 0) {
     document.getElementById('recentBookingsSection').style.display = 'block';
     const recent = myBookings.slice(-3).reverse();
     document.getElementById('recentBookingsList').innerHTML = recent.map(b => `
       <div style="display:flex; justify-content:space-between; align-items:center; padding:0.8rem; background:var(--onyx-2); border-radius:10px; margin-bottom:0.6rem;">
-        <div><p style="font-size:0.88rem; font-weight:500;">${b.roomType}</p><p style="font-size:0.75rem; color:var(--text-muted);">${b.checkinDate} → ${b.checkoutDate}</p></div>
-        <div style="text-align:right;"><p style="color:var(--gold); font-weight:600; font-size:0.88rem;">${formatRupiah(b.totalPrice)}</p>
-          ${b.paymentStatus === 'paid' ? '<span class="badge-paid">Lunas</span>' : '<span class="badge-pending">Pending</span>'}
+        <div><p style="font-size:0.88rem; font-weight:500;">${b.room_type} No.${b.room_number}</p><p style="font-size:0.75rem; color:var(--text-muted);">${b.checkin_date} → ${b.checkout_date}</p></div>
+        <div style="text-align:right;"><p style="color:var(--gold); font-weight:600; font-size:0.88rem;">${formatRupiah(b.total_price)}</p>
+          ${b.payment_status === 'paid' ? '<span class="badge-paid">Lunas</span>' : '<span class="badge-pending">Pending</span>'}
         </div>
       </div>
     `).join('');
@@ -599,63 +612,86 @@ function loadHomeTab() {
   }
 }
 
-// Searching
-document.getElementById('searchCheckin').addEventListener('change', function () {
-  const next = new Date(this.value); next.setDate(next.getDate() + 1);
-  const nextStr = next.toISOString().split('T')[0];
-  document.getElementById('searchCheckout').min = nextStr;
-  if (document.getElementById('searchCheckout').value <= this.value) document.getElementById('searchCheckout').value = nextStr;
-});
-
-function isRoomAvailable(roomId, checkin, checkout) {
-  return !getBookings().some(b => b.roomId === roomId && b.paymentStatus === 'paid' && new Date(checkin) < new Date(b.checkoutDate) && new Date(checkout) > new Date(b.checkinDate));
-}
-
-document.getElementById('doSearchBtn').addEventListener('click', () => {
+// ================== SEARCH & UNIT PICKER (BIOSKOP) ==================
+document.getElementById('doSearchBtn').addEventListener('click', async () => {
   const checkin = document.getElementById('searchCheckin').value;
   const checkout = document.getElementById('searchCheckout').value;
   const roomType = document.getElementById('searchRoomType').value;
   if (!checkin || !checkout) return toast('Pilih tanggal check-in dan check-out', 'error');
   if (new Date(checkin) >= new Date(checkout)) return toast('Check-out harus setelah check-in', 'error');
 
-  const nights = Math.ceil((new Date(checkout) - new Date(checkin)) / 86400000);
-  const rooms = getRooms().filter(r => (roomType ? r.type === roomType : true) && r.stock > 0 && isRoomAvailable(r.id, checkin, checkout));
+  let json = await apiCall('get_rooms', {}, 'GET');
+  let rooms = json.data || [];
+  if (roomType) rooms = rooms.filter(r => r.id === roomType);
 
   document.getElementById('searchResults').style.display = 'block';
   document.getElementById('searchEmpty').style.display = rooms.length ? 'none' : 'block';
 
   if (rooms.length) {
+    const nights = Math.ceil((new Date(checkout) - new Date(checkin)) / 86400000);
     document.getElementById('roomsGrid').innerHTML = rooms.map(r => `
       <div class="room-card">
         <div class="room-img"><span>${r.emoji || '🛏️'}</span><span class="room-badge">TERSEDIA</span></div>
         <div class="room-body">
           <h4>${r.type}</h4><p>${r.description}</p>
-          <div class="room-price"><strong>${formatRupiah(r.pricePerNight)}</strong><span>/ malam × ${nights} malam</span></div>
-          <p style="font-size:0.78rem; color:var(--gold); margin-bottom:0.8rem;">Total: ${formatRupiah(r.pricePerNight * nights)}</p>
-          <button class="btn-book" onclick='openPaymentModal(${JSON.stringify(r)}, "${checkin}", "${checkout}", ${nights})'><i class="fas fa-bookmark"></i> Pesan Sekarang</button>
+          <div class="room-price"><strong>${formatRupiah(r.price_per_night)}</strong><span>/ malam × ${nights} malam</span></div>
+          <p style="font-size:0.78rem; color:var(--gold); margin-bottom:0.8rem;">Total: ${formatRupiah(r.price_per_night * nights)}</p>
+          <button class="btn-book" onclick='openUnitPicker("${r.id}", "${r.type}", "${checkin}", "${checkout}", ${nights}, ${r.price_per_night})'>
+            <i class="fas fa-bed"></i> Pilih Nomor Kamar
+          </button>
         </div>
       </div>
     `).join('');
   }
 });
 
-// Payment Modal
-window.openPaymentModal = function(room, checkin, checkout, nights) {
-  pendingBooking = { room, checkin, checkout, nights, total: room.pricePerNight * nights };
-  selectedPaymentMethod = null;
-  document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('selected'));
-
-  document.getElementById('modalSummary').innerHTML = `
-    <div class="summary-row"><span>Kamar</span><span>${room.type}</span></div>
-    <div class="summary-row"><span>Check-in</span><span>${checkin}</span></div>
-    <div class="summary-row"><span>Check-out</span><span>${checkout}</span></div>
-    <div class="summary-row"><span>Durasi</span><span>${nights} malam</span></div>
-    <div class="summary-row"><span>Harga/malam</span><span>${formatRupiah(room.pricePerNight)}</span></div>
-    <div class="summary-row total"><span>Total Pembayaran</span><span>${formatRupiah(room.pricePerNight * nights)}</span></div>
-  `;
-  document.getElementById('paymentModal').classList.add('open');
+async function openUnitPicker(roomId, type, checkin, checkout, nights, pricePerNight) {
+  document.getElementById('unitPickerInfo').textContent = `${type} · ${checkin} → ${checkout}`;
+  let json = await apiCall('get_room_units_availability', { room_id: roomId, checkin, checkout }, 'GET');
+  const grid = document.getElementById('unitGrid');
+  grid.innerHTML = '';
+  if (json.success) {
+    json.data.forEach(u => {
+      let div = document.createElement('div');
+      div.className = 'room-unit-box ' + (u.available ? 'available' : 'unavailable');
+      div.textContent = u.room_number;
+      if (u.available) {
+        div.addEventListener('click', () => {
+          document.querySelectorAll('.room-unit-box.selected').forEach(d => d.classList.remove('selected'));
+          div.classList.add('selected');
+          selectedUnit = u;
+          document.getElementById('confirmUnitBtn').disabled = false;
+        });
+      }
+      grid.appendChild(div);
+    });
+  }
+  selectedUnit = null;
+  document.getElementById('confirmUnitBtn').disabled = true;
+  document.getElementById('unitPickerModal').classList.add('open');
+  pendingUnitData = { type, checkin, checkout, nights, pricePerNight };
 }
 
+document.getElementById('cancelUnitBtn').addEventListener('click', () => {
+  document.getElementById('unitPickerModal').classList.remove('open');
+});
+
+document.getElementById('confirmUnitBtn').addEventListener('click', () => {
+  if (!selectedUnit) return;
+  document.getElementById('unitPickerModal').classList.remove('open');
+  let total = pendingUnitData.nights * pendingUnitData.pricePerNight;
+  document.getElementById('modalSummary').innerHTML = `
+    <div class="summary-row"><span>Kamar</span><span>${pendingUnitData.type} No. ${selectedUnit.room_number}</span></div>
+    <div class="summary-row"><span>Check-in</span><span>${pendingUnitData.checkin}</span></div>
+    <div class="summary-row"><span>Check-out</span><span>${pendingUnitData.checkout}</span></div>
+    <div class="summary-row"><span>Durasi</span><span>${pendingUnitData.nights} malam</span></div>
+    <div class="summary-row"><span>Harga/malam</span><span>${formatRupiah(pendingUnitData.pricePerNight)}</span></div>
+    <div class="summary-row total"><span>Total Pembayaran</span><span>${formatRupiah(total)}</span></div>
+  `;
+  document.getElementById('paymentModal').classList.add('open');
+});
+
+// ================== PEMBAYARAN ==================
 document.querySelectorAll('.method-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('selected'));
@@ -664,9 +700,11 @@ document.querySelectorAll('.method-btn').forEach(btn => {
   });
 });
 
-document.getElementById('cancelPaymentBtn').addEventListener('click', () => { document.getElementById('paymentModal').classList.remove('open'); pendingBooking = null; });
+document.getElementById('cancelPaymentBtn').addEventListener('click', () => {
+  document.getElementById('paymentModal').classList.remove('open');
+});
 
-document.getElementById('confirmPaymentBtn').addEventListener('click', () => {
+document.getElementById('confirmPaymentBtn').addEventListener('click', async () => {
   if (!selectedPaymentMethod) return toast('Pilih metode pembayaran', 'error');
   
   document.getElementById('paymentModal').classList.remove('open');
@@ -675,83 +713,95 @@ document.getElementById('confirmPaymentBtn').addEventListener('click', () => {
   document.getElementById('voucherContent').style.display = 'none';
 
   const guests = parseInt(document.getElementById('guestCount').value) || 1;
-  const bookingId = 'BK' + Date.now();
-
-  const newBooking = {
-    id: bookingId, customerId: currentUser.id, customerEmail: currentUser.email, customerName: currentUser.name,
-    roomId: pendingBooking.room.id, roomType: pendingBooking.room.type, checkinDate: pendingBooking.checkin,
-    checkoutDate: pendingBooking.checkout, nights: pendingBooking.nights, guests, totalPrice: pendingBooking.total,
-    paymentStatus: 'pending', metodePembayaran: selectedPaymentMethod, e_voucher: null, createdAt: new Date().toISOString()
-  };
   
-  const bookings = getBookings(); bookings.push(newBooking); save(STORE.bookings, bookings);
+  // Buat booking
+  let bookingRes = await apiCall('create_booking', {
+    room_unit_id: selectedUnit.unit_id,
+    checkin_date: pendingUnitData.checkin,
+    checkout_date: pendingUnitData.checkout,
+    guests
+  });
+  
+  if (!bookingRes.success) {
+    document.getElementById('processingModal').classList.remove('open');
+    return toast(bookingRes.message, 'error');
+  }
 
-  setTimeout(() => {
-    const allBookings = getBookings();
-    const idx = allBookings.findIndex(b => b.id === bookingId);
-    if (idx !== -1) {
-      const voucher = 'EV-' + bookingId.slice(-8).toUpperCase();
-      allBookings[idx].paymentStatus = 'paid';
-      allBookings[idx].e_voucher = voucher;
-      save(STORE.bookings, allBookings);
+  // Proses pembayaran
+  let payRes = await apiCall('process_payment', {
+    booking_id: bookingRes.booking_id,
+    method: selectedPaymentMethod
+  });
 
-      const transactions = getTransactions();
-      transactions.push({ id: 'TRX' + Date.now(), bookingId, customerId: currentUser.id, customerEmail: currentUser.email, amount: pendingBooking.total, method: selectedPaymentMethod, status: 'SUCCESS', e_voucher: voucher, date: new Date().toISOString() });
-      save(STORE.transactions, transactions);
-
-      document.getElementById('voucherCode').textContent = voucher;
-      document.getElementById('processingContent').style.display = 'none';
-      document.getElementById('voucherContent').style.display = 'block';
-    }
-  }, 2000);
+  if (payRes.success) {
+    document.getElementById('voucherCode').textContent = payRes.e_voucher;
+    document.getElementById('processingContent').style.display = 'none';
+    document.getElementById('voucherContent').style.display = 'block';
+  } else {
+    document.getElementById('processingModal').classList.remove('open');
+    toast(payRes.message, 'error');
+  }
 });
 
 document.getElementById('closeVoucherBtn').addEventListener('click', () => {
   document.getElementById('processingModal').classList.remove('open');
-  pendingBooking = null;
   toast('Booking berhasil! Cek E-Voucher Anda', 'success');
   document.querySelector('.nav-btn[data-tab="mybookings"]').click();
 });
 
-// Bookings
-function loadMyBookings() {
-  const myBookings = getBookings().filter(b => b.customerId === currentUser.id || b.customerEmail === currentUser.email);
+// ================== MY BOOKINGS ==================
+async function loadMyBookings() {
+  let json = await apiCall('get_bookings', {}, 'GET');
+  const myBookings = json.data || [];
   const tbody = document.getElementById('myBookingsBody');
-  if (!myBookings.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:2.5rem;">Belum ada booking. Cari kamar sekarang!</td></tr>'; return; }
+  if (!myBookings.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:2.5rem;">Belum ada booking. Cari kamar sekarang!</td></tr>';
+    return;
+  }
   tbody.innerHTML = myBookings.slice().reverse().map(b => `
     <tr>
-      <td><span class="voucher-small">${b.id.slice(-8)}</span></td><td>${b.roomType}</td><td>${b.checkinDate}</td><td>${b.checkoutDate}</td><td>${b.guests || 1}</td>
-      <td style="color:var(--gold); font-weight:600;">${formatRupiah(b.totalPrice)}</td>
-      <td>${b.paymentStatus === 'paid' ? '<span class="badge-paid">✓ Lunas</span>' : '<span class="badge-pending">⏳ Pending</span>'}</td>
-      <td>${b.e_voucher ? `<span class="voucher-small">${b.e_voucher}</span>` : '–'}</td><td style="color:var(--text-muted); font-size:0.78rem;">${b.metodePembayaran || '–'}</td>
+      <td><span class="voucher-small">${b.id.slice(-8)}</span></td>
+      <td>${b.room_type} No.${b.room_number}</td>
+      <td>${b.checkin_date}</td>
+      <td>${b.checkout_date}</td>
+      <td>${b.guests || 1}</td>
+      <td style="color:var(--gold); font-weight:600;">${formatRupiah(b.total_price)}</td>
+      <td>${b.payment_status === 'paid' ? '<span class="badge-paid">✓ Lunas</span>' : '<span class="badge-pending">⏳ Pending</span>'}</td>
+      <td>${b.e_voucher ? `<span class="voucher-small">${b.e_voucher}</span>` : '–'}</td>
+      <td style="color:var(--text-muted); font-size:0.78rem;">${b.metode_pembayaran || '–'}</td>
     </tr>
   `).join('');
 }
 
-document.getElementById('cancelAllBtn').addEventListener('click', () => {
+document.getElementById('cancelAllBtn').addEventListener('click', async () => {
   if (!confirm('Hapus semua booking Anda? Tindakan ini tidak bisa dibatalkan.')) return;
-  const remaining = getBookings().filter(b => b.customerId !== currentUser.id && b.customerEmail !== currentUser.email);
-  save(STORE.bookings, remaining); loadMyBookings(); loadHomeTab(); toast('Semua booking dihapus', 'info');
+  let json = await apiCall('get_bookings', {}, 'GET');
+  let bookings = json.data || [];
+  for (let b of bookings) {
+    await apiCall('delete_booking', { booking_id: b.id });
+  }
+  loadMyBookings();
+  loadHomeTab();
+  toast('Semua booking dihapus', 'info');
 });
 
-// Profile
-function loadProfile() {
+// ================== PROFILE ==================
+async function loadProfile() {
   document.getElementById('profileName').textContent = currentUser.name;
   document.getElementById('profileEmail').textContent = currentUser.email;
   document.getElementById('profilePhone').textContent = currentUser.phone || '–';
-  document.getElementById('profileIdNumber').textContent = currentUser.id_number || currentUser.idNumber || '–';
-  document.getElementById('profileJoined').textContent = currentUser.joined_at || currentUser.joinedAt || '–';
+  document.getElementById('profileIdNumber').textContent = currentUser.id_number || '–';
+  document.getElementById('profileJoined').textContent = currentUser.joined_at || '–';
 
-  const myBookings = getBookings().filter(b => b.customerId === currentUser.id || b.customerEmail === currentUser.email);
-  const paid = myBookings.filter(b => b.paymentStatus === 'paid');
+  let json = await apiCall('get_bookings', {}, 'GET');
+  const myBookings = json.data || [];
+  const paid = myBookings.filter(b => b.payment_status === 'paid');
   
   document.getElementById('profileTotal').textContent = myBookings.length;
   document.getElementById('profilePaid').textContent = paid.length;
-  document.getElementById('profilePending').textContent = myBookings.filter(b => b.paymentStatus !== 'paid').length;
-  document.getElementById('profileSpent').textContent = formatRupiah(paid.reduce((s, b) => s + b.totalPrice, 0));
+  document.getElementById('profilePending').textContent = myBookings.filter(b => b.payment_status !== 'paid').length;
+  document.getElementById('profileSpent').textContent = formatRupiah(paid.reduce((s, b) => s + Number(b.total_price), 0));
 }
-
-function formatRupiah(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
 </script>
 </body>
 </html>
