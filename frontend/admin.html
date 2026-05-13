@@ -307,60 +307,71 @@
 </div>
 
 <script>
-// ============================================================
-// DATA LAYER — Integrasi dengan LocalStorage yang sama
-// ============================================================
-const STORE = {
-  users: 'luxe_cust_users',
-  rooms: 'luxe_cust_rooms',
-  bookings: 'luxe_cust_bookings',
-  transactions: 'luxe_cust_transactions',
-  session: 'luxe_cust_session'
-};
+// ================== KONFIGURASI ==================
+const API = '../backend/api.php';
+const token = sessionStorage.getItem('token');
+let currentAdmin = null;
 
-function ls(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }
-function save(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
-
-function getUsers() { return ls(STORE.users) || []; }
-function getRooms() { return ls(STORE.rooms) || []; }
-function getBookings() { return ls(STORE.bookings) || []; }
-function getTransactions() { return ls(STORE.transactions) || []; }
-
-function formatRupiah(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
-
+// ================== FUNGSI UTILITY ==================
 function toast(msg, type = 'info') {
   let t = document.querySelector('.toast');
   if (t) t.remove();
   t = document.createElement('div');
   t.className = `toast ${type}`;
-  const icons = { success:'fa-check-circle', error:'fa-exclamation-triangle', info:'fa-info-circle' };
+  const icons = { success: 'fa-check-circle', error: 'fa-exclamation-triangle', info: 'fa-info-circle' };
   t.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i> ${msg}`;
   document.body.appendChild(t);
   setTimeout(() => t.classList.add('show'), 10);
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
 }
 
-// ─── PROTEKSI HALAMAN (Sesi Check) ──────────────────────────
-let currentAdmin = null;
-window.onload = () => {
-  const session = ls(STORE.session);
-  if (!session || !session.id) return window.location.href = 'login.html';
+function formatRupiah(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
+
+async function apiCall(action, data = {}, method = 'POST') {
+  data.token = token;
+  let headers = { 'Content-Type': 'application/json' };
+  let opts = { method, headers };
   
-  const user = getUsers().find(u => u.id === session.id);
-  if (!user || user.role !== 'admin') return window.location.href = 'login.html'; // Usir jika bukan admin
+  if (method === 'GET') {
+    // PERBAIKAN: Gunakan '&' karena di URL sudah ada '?action='
+    action += '&' + new URLSearchParams(data);
+    delete opts.body;
+  } else {
+    opts.body = JSON.stringify(data);
+  }
   
-  currentAdmin = user;
-  document.getElementById('adminName').textContent = user.name;
+  try {
+    let res = await fetch(API + '?action=' + action, opts);
+    return res.json();
+  } catch (e) {
+    return { success: false, message: 'Gagal terhubung ke server' };
+  }
+}
+
+// ================== PROTEKSI HALAMAN ==================
+(async function init() {
+  if (!token) {
+    window.location.href = 'login.html';
+    return;
+  }
+  let json = await apiCall('me', {}, 'POST');
+  if (!json.success || json.user.role !== 'admin') {
+    sessionStorage.removeItem('token');
+    window.location.href = 'login.html';
+    return;
+  }
+  currentAdmin = json.user;
+  document.getElementById('adminName').textContent = currentAdmin.name;
   
   initAdminPanel();
-};
+})();
 
 document.getElementById('logoutBtn').addEventListener('click', () => {
-  localStorage.removeItem(STORE.session);
+  sessionStorage.removeItem('token');
   window.location.href = 'login.html';
 });
 
-// ─── NAVIGASI TABS ──────────────────────────────────────────
+// ================== NAVIGASI TABS ==================
 document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.nav-btn[data-tab]').forEach(b => b.classList.remove('active'));
@@ -368,146 +379,137 @@ document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
     document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + btn.getAttribute('data-tab')).classList.add('active');
     
-    // Refresh data saat tab di-klik
     initAdminPanel();
   });
 });
 
-// ─── INIT ADMIN PANEL ───────────────────────────────────────
 function initAdminPanel() {
-  loadDashboardStats();
-  loadBookingsTable();
-  loadRoomsTable();
-  loadCustomersTable();
+  const activeTab = document.querySelector('.nav-btn.active').getAttribute('data-tab');
+  if(activeTab === 'dashboard') loadDashboardStats();
+  if(activeTab === 'bookings') loadBookingsTable();
+  if(activeTab === 'rooms') loadRoomsTable();
+  if(activeTab === 'customers') loadCustomersTable();
 }
 
-// ─── 1. DASHBOARD TAB ───────────────────────────────────────
-function loadDashboardStats() {
-  const bookings = getBookings();
-  const rooms = getRooms();
-  const users = getUsers().filter(u => u.role === 'customer');
-  
-  const paidBookings = bookings.filter(b => b.paymentStatus === 'paid');
-  const totalRevenue = paidBookings.reduce((sum, b) => sum + b.totalPrice, 0);
+// ─── 1. DASHBOARD TAB ───
+async function loadDashboardStats() {
+  let statsJson = await apiCall('get_stats', {}, 'GET');
+  let trxsJson = await apiCall('get_transactions', {}, 'GET');
 
-  document.getElementById('adminStats').innerHTML = `
-    <div class="stat-card"><div class="stat-icon"><i class="fas fa-wallet"></i></div>
-      <h3>${formatRupiah(totalRevenue)}</h3><p>Total Pendapatan</p></div>
-    <div class="stat-card"><div class="stat-icon"><i class="fas fa-ticket"></i></div>
-      <h3>${bookings.length}</h3><p>Total Reservasi</p></div>
-    <div class="stat-card"><div class="stat-icon"><i class="fas fa-bed"></i></div>
-      <h3>${rooms.reduce((sum, r) => sum + parseInt(r.stock), 0)}</h3><p>Total Stok Kamar</p></div>
-    <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div>
-      <h3>${users.length}</h3><p>Pelanggan Aktif</p></div>
-  `;
+  if(statsJson.success) {
+    const s = statsJson.data;
+    document.getElementById('adminStats').innerHTML = `
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-wallet"></i></div>
+        <h3>${formatRupiah(s.totalRevenue)}</h3><p>Total Pendapatan</p></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-ticket"></i></div>
+        <h3>${s.totalBookings}</h3><p>Total Reservasi</p></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-bed"></i></div>
+        <h3>${s.totalUnits}</h3><p>Total Unit Kamar</p></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div>
+        <h3>${s.totalCustomers}</h3><p>Pelanggan Aktif</p></div>
+    `;
+  }
 
-  // Recent Transactions
-  const trxs = getTransactions().slice(-5).reverse();
   const tbody = document.getElementById('recentTrxBody');
-  if(!trxs.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Belum ada transaksi</td></tr>';
-  } else {
-    tbody.innerHTML = trxs.map(t => `
+  if(trxsJson.success && trxsJson.data.length > 0) {
+    tbody.innerHTML = trxsJson.data.map(t => `
       <tr>
         <td style="font-family:monospace; color:var(--gold);">${t.id}</td>
-        <td>${t.customerEmail}</td>
+        <td>${t.customer_email}</td>
         <td style="font-weight:bold;">${formatRupiah(t.amount)}</td>
         <td>${t.method}</td>
-        <td>${new Date(t.date).toLocaleDateString('id-ID')}</td>
+        <td>${t.created_at}</td>
       </tr>
     `).join('');
+  } else {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Belum ada transaksi</td></tr>';
   }
 }
 
-// ─── 2. BOOKINGS TAB ────────────────────────────────────────
-function loadBookingsTable() {
-  const bookings = getBookings().reverse();
+// ─── 2. BOOKINGS TAB ───
+async function loadBookingsTable() {
+  let json = await apiCall('get_bookings', {}, 'GET');
   const tbody = document.getElementById('adminBookingsBody');
   
-  if(!bookings.length) {
+  if(!json.success || json.data.length === 0) {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Belum ada data booking</td></tr>';
     return;
   }
 
-  tbody.innerHTML = bookings.map(b => `
+  tbody.innerHTML = json.data.map(b => `
     <tr>
       <td style="font-family:monospace;">${b.id}</td>
-      <td><strong>${b.customerName || '-'}</strong><br><small style="color:var(--text-muted)">${b.customerEmail}</small></td>
-      <td>${b.roomType}</td>
-      <td>${b.checkinDate}</td>
-      <td style="color:var(--gold); font-weight:600;">${formatRupiah(b.totalPrice)}</td>
+      <td><strong>${b.customer_name || '-'}</strong><br><small style="color:var(--text-muted)">${b.customer_email}</small></td>
+      <td>${b.room_type} No.${b.room_number}</td>
+      <td>${b.checkin_date}</td>
+      <td style="color:var(--gold); font-weight:600;">${formatRupiah(b.total_price)}</td>
       <td>
-        ${b.paymentStatus === 'paid' ? '<span class="badge-paid">Paid</span>' : 
-          b.paymentStatus === 'cancelled' ? '<span class="badge-cancelled">Cancelled</span>' : 
+        ${b.payment_status === 'paid' ? '<span class="badge-paid">Paid</span>' : 
+          b.payment_status === 'cancelled' ? '<span class="badge-cancelled">Cancelled</span>' : 
           '<span class="badge-pending">Pending</span>'}
       </td>
       <td>
-        ${b.paymentStatus === 'pending' ? `<button class="action-btn" onclick="confirmPayment('${b.id}')" title="Tandai Lunas"><i class="fas fa-check"></i></button>` : ''}
+        ${b.payment_status === 'pending' ? `<button class="action-btn" onclick="confirmPayment('${b.id}')" title="Tandai Lunas"><i class="fas fa-check"></i></button>` : ''}
         <button class="action-btn delete" onclick="deleteBooking('${b.id}')" title="Hapus Booking"><i class="fas fa-trash"></i></button>
       </td>
     </tr>
   `).join('');
 }
 
-window.confirmPayment = (id) => {
-  if(!confirm('Tandai booking ini sebagai LUNAS? E-Voucher akan digenerate otomatis.')) return;
-  const bookings = getBookings();
-  const idx = bookings.findIndex(b => b.id === id);
-  if(idx > -1) {
-    bookings[idx].paymentStatus = 'paid';
-    bookings[idx].e_voucher = 'EV-' + id.slice(-8).toUpperCase();
-    save(STORE.bookings, bookings);
-    
-    // Create Trx
-    const trxs = getTransactions();
-    trxs.push({ id: 'TRX'+Date.now(), bookingId: id, customerEmail: bookings[idx].customerEmail, amount: bookings[idx].totalPrice, method: 'Manual by Admin', status: 'SUCCESS', date: new Date().toISOString() });
-    save(STORE.transactions, trxs);
-    
+window.confirmPayment = async (id) => {
+  if(!confirm('Tandai booking ini sebagai LUNAS? Bukti Reservasi akan digenerate otomatis.')) return;
+  let json = await apiCall('process_payment', { booking_id: id, method: 'Manual by Admin' });
+  if(json.success) {
     toast('Pembayaran dikonfirmasi', 'success');
-    initAdminPanel();
+    loadBookingsTable();
+  } else {
+    toast(json.message, 'error');
   }
 };
 
-window.deleteBooking = (id) => {
+window.deleteBooking = async (id) => {
   if(!confirm('Hapus data booking ini secara permanen?')) return;
-  let bookings = getBookings();
-  bookings = bookings.filter(b => b.id !== id);
-  save(STORE.bookings, bookings);
-  toast('Booking dihapus', 'info');
-  initAdminPanel();
+  let json = await apiCall('delete_booking', { booking_id: id });
+  if(json.success) {
+    toast('Booking dihapus', 'info');
+    loadBookingsTable();
+  } else {
+    toast('Gagal menghapus booking', 'error');
+  }
 };
 
-// ─── 3. ROOMS TAB ───────────────────────────────────────────
-function loadRoomsTable() {
-  const rooms = getRooms();
+// ─── 3. ROOMS TAB ───
+async function loadRoomsTable() {
+  let json = await apiCall('get_rooms', {}, 'GET');
   const tbody = document.getElementById('adminRoomsBody');
   
-  if(!rooms.length) {
+  if(!json.success || json.data.length === 0) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Belum ada data kamar</td></tr>';
     return;
   }
 
-  tbody.innerHTML = rooms.map(r => `
+  tbody.innerHTML = json.data.map(r => `
     <tr>
-      <td style="font-family:monospace; color:var(--text-muted);">${r.id}</td>
+      <td style="font-family:monospace; color:var(--text-muted);">${r.id.substring(0,8)}...</td>
       <td><strong>${r.emoji || '🛏️'} ${r.type}</strong></td>
-      <td style="color:var(--gold);">${formatRupiah(r.pricePerNight || r.price_per_night)}</td>
-      <td>${r.stock} Kamar</td>
-      <td>${(r.is_active !== false && r.is_active !== 0) ? '<span class="badge-active">Aktif</span>' : '<span class="badge-inactive">Non-Aktif</span>'}</td>
+      <td style="color:var(--gold);">${formatRupiah(r.price_per_night)}</td>
+      <td>${r.total_units} Kamar</td>
+      <td>${(r.is_active == 1) ? '<span class="badge-active">Aktif</span>' : '<span class="badge-inactive">Non-Aktif</span>'}</td>
       <td>
         <button class="action-btn" onclick='editRoom(${JSON.stringify(r)})' title="Edit Kamar"><i class="fas fa-edit"></i></button>
+        <button class="action-btn delete" onclick='deleteRoom("${r.id}")' title="Hapus Kamar"><i class="fas fa-trash"></i></button>
       </td>
     </tr>
   `).join('');
 }
 
-// Room Modal Logic
 const roomModal = document.getElementById('roomModal');
 document.getElementById('openAddRoomBtn').addEventListener('click', () => {
   document.getElementById('roomIdInput').value = '';
   document.getElementById('roomType').value = '';
   document.getElementById('roomPrice').value = '';
-  document.getElementById('roomStock').value = '';
+  document.getElementById('roomStock').value = '1'; // Placeholder
+  document.getElementById('roomStock').disabled = true; // Stok dikelola via room_units
   document.getElementById('roomEmoji').value = '🛏️';
   document.getElementById('roomDesc').value = '';
   document.getElementById('roomActive').value = '1';
@@ -522,64 +524,68 @@ document.getElementById('closeRoomModal').addEventListener('click', () => {
 window.editRoom = (room) => {
   document.getElementById('roomIdInput').value = room.id;
   document.getElementById('roomType').value = room.type;
-  document.getElementById('roomPrice').value = room.pricePerNight || room.price_per_night;
-  document.getElementById('roomStock').value = room.stock;
+  document.getElementById('roomPrice').value = room.price_per_night;
+  document.getElementById('roomStock').disabled = true; 
   document.getElementById('roomEmoji').value = room.emoji || '';
   document.getElementById('roomDesc').value = room.description || '';
-  document.getElementById('roomActive').value = (room.is_active !== false && room.is_active !== 0) ? '1' : '0';
+  document.getElementById('roomActive').value = room.is_active;
   document.getElementById('roomModalTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Kamar';
   roomModal.classList.add('open');
 };
 
-document.getElementById('saveRoomBtn').addEventListener('click', () => {
+document.getElementById('saveRoomBtn').addEventListener('click', async () => {
   const id = document.getElementById('roomIdInput').value;
-  const type = document.getElementById('roomType').value.trim();
-  const price = document.getElementById('roomPrice').value;
-  const stock = document.getElementById('roomStock').value;
-  const emoji = document.getElementById('roomEmoji').value;
-  const desc = document.getElementById('roomDesc').value;
-  const isActive = parseInt(document.getElementById('roomActive').value);
+  const payload = {
+    type: document.getElementById('roomType').value.trim(),
+    price_per_night: document.getElementById('roomPrice').value,
+    emoji: document.getElementById('roomEmoji').value,
+    description: document.getElementById('roomDesc').value,
+    is_active: document.getElementById('roomActive').value
+  };
 
-  if(!type || !price || !stock) return toast('Lengkapi data wajib!', 'error');
+  if(!payload.type || !payload.price_per_night) return toast('Lengkapi data wajib!', 'error');
 
-  const rooms = getRooms();
-  
   if (id) {
-    // Edit Mode
-    const idx = rooms.findIndex(r => r.id === id);
-    if(idx > -1) {
-      rooms[idx] = { ...rooms[idx], type, pricePerNight: parseInt(price), stock: parseInt(stock), emoji, description: desc, is_active: isActive };
-      toast('Kamar berhasil diperbarui', 'success');
-    }
+    payload.id = id;
+    let res = await apiCall('update_room', payload);
+    if(res.success) toast('Kamar diperbarui', 'success');
   } else {
-    // Add Mode
-    const newRoom = { id: 'rm_' + Date.now(), type, pricePerNight: parseInt(price), stock: parseInt(stock), emoji, description: desc, is_active: isActive };
-    rooms.push(newRoom);
-    toast('Kamar baru ditambahkan', 'success');
+    let res = await apiCall('add_room', payload);
+    if(res.success) toast('Kamar ditambahkan', 'success');
   }
 
-  save(STORE.rooms, rooms);
   roomModal.classList.remove('open');
   loadRoomsTable();
 });
 
-// ─── 4. CUSTOMERS TAB ───────────────────────────────────────
-function loadCustomersTable() {
-  const customers = getUsers().filter(u => u.role === 'customer').reverse();
+window.deleteRoom = async (id) => {
+  if(!confirm('Yakin hapus tipe kamar ini?')) return;
+  let json = await apiCall('delete_room', { id });
+  if(json.success) {
+    toast('Kamar dihapus', 'info');
+    loadRoomsTable();
+  } else {
+    toast(json.message, 'error');
+  }
+};
+
+// ─── 4. CUSTOMERS TAB ───
+async function loadCustomersTable() {
+  let json = await apiCall('get_customers', {}, 'GET');
   const tbody = document.getElementById('adminCustomersBody');
   
-  if(!customers.length) {
+  if(!json.success || json.data.length === 0) {
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Belum ada data pelanggan</td></tr>';
     return;
   }
 
-  tbody.innerHTML = customers.map(c => `
+  tbody.innerHTML = json.data.map(c => `
     <tr>
       <td><strong>${c.name}</strong></td>
       <td>${c.email}</td>
       <td>${c.phone || '-'}</td>
-      <td>${c.id_number || c.idNumber || '-'}</td>
-      <td>${c.joined_at || c.joinedAt || '-'}</td>
+      <td>${c.id_number || '-'}</td>
+      <td>${c.joined_at}</td>
     </tr>
   `).join('');
 }

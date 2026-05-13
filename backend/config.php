@@ -32,7 +32,7 @@ function authenticate($pdo) {
         echo json_encode(['success' => false, 'message' => 'Token tidak ada']);
         exit;
     }
-    $stmt = $pdo->prepare("SELECT u.id, u.name, u.email, u.role FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()");
+    $stmt = $pdo->prepare("SELECT u.id, u.name, u.email, u.role, u.phone, u.id_number, u.joined_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()");
     $stmt->execute([$token]);
     $user = $stmt->fetch();
     if (!$user) {

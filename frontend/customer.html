@@ -286,7 +286,7 @@
             <div style="display: flex; align-items: center; gap: 1rem; padding: 0.8rem 1rem; background: var(--onyx-2); border-radius: 12px; cursor: pointer; border: 1px solid transparent; transition: 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='transparent'" onclick="document.querySelector('.nav-btn[data-tab=\'mybookings\']').click()">
               <div style="width: 40px; height: 40px; background: var(--gold-dim); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 1.1rem;"><i class="fas fa-ticket"></i></div>
               <div>
-                <strong style="font-size: 0.9rem; color: var(--text-primary); display: block;">E-Voucher Anda</strong>
+                <strong style="font-size: 0.9rem; color: var(--text-primary); display: block;">Riwayat Anda</strong>
                 <span style="font-size: 0.75rem; color: var(--text-muted);">Lihat riwayat dan akses tiket *check-in*</span>
               </div>
             </div>
@@ -304,7 +304,7 @@
     <div class="tab-pane" id="tab-search">
       <div class="page-header">
         <h2>Cari & Pesan Kamar</h2>
-        <p>Temukan kamar terbaik sesuai tanggal dan preferensi Anda — P2.0 Booking Kamar</p>
+        <p>Temukan kamar terbaik sesuai tanggal dan preferensi Anda</p>
       </div>
 
       <div class="flow-section">
@@ -342,7 +342,7 @@
       <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
         <div>
           <h2>Booking Saya</h2>
-          <p>Riwayat dan status reservasi Anda — DS2 Database Booking</p>
+          <p>Riwayat dan status reservasi Anda</p>
         </div>
         <button id="cancelAllBtn" style="background:rgba(224,92,92,0.1); border:1px solid rgba(224,92,92,0.3); border-radius:10px; padding:0.6rem 1.2rem; color:var(--red); font-family:var(--font-body); font-size:0.82rem; cursor:pointer; transition:0.2s;">
           <i class="fas fa-trash"></i> Hapus Semua
@@ -360,7 +360,7 @@
               <th>Tamu</th>
               <th>Total</th>
               <th>Status</th>
-              <th>E-Voucher</th>
+              <th>Bukti Reservasi</th>
               <th>Metode Bayar</th>
             </tr>
           </thead>
@@ -375,7 +375,7 @@
     <div class="tab-pane" id="tab-profile">
       <div class="page-header">
         <h2>Profil Saya</h2>
-        <p>Informasi akun dan data pribadi Anda — DS1 Database User</p>
+        <p>Informasi akun dan data pribadi Anda</p>
       </div>
 
       <div class="profile-grid">
@@ -462,7 +462,7 @@
     <div id="voucherContent" style="display:none;">
       <div class="voucher-card">
         <i class="fas fa-check-circle" style="color:var(--green); font-size:2.5rem;"></i>
-        <p style="margin-top:0.8rem; font-size:0.8rem; letter-spacing:2px; color:var(--text-muted);">E-VOUCHER BERHASIL DITERBITKAN</p>
+        <p style="margin-top:0.8rem; font-size:0.8rem; letter-spacing:2px; color:var(--text-muted);">BUKTI RESERVASI BERHASIL DITERBITKAN</p>
         <div class="voucher-id" id="voucherCode">–</div>
         <p style="font-size:0.78rem; color:var(--text-muted);">Simpan kode ini untuk check-in di hotel</p>
       </div>
@@ -499,12 +499,15 @@ async function apiCall(action, data = {}, method = 'POST') {
   data.token = token;
   let headers = { 'Content-Type': 'application/json' };
   let opts = { method, headers };
+  
   if (method === 'GET') {
-    action += '?' + new URLSearchParams(data);
+    // PERBAIKAN: Gunakan '&' karena di URL sudah ada '?action='
+    action += '&' + new URLSearchParams(data);
     delete opts.body;
   } else {
     opts.body = JSON.stringify(data);
   }
+  
   try {
     let res = await fetch(API + '?action=' + action, opts);
     return res.json();
@@ -745,7 +748,7 @@ document.getElementById('confirmPaymentBtn').addEventListener('click', async () 
 
 document.getElementById('closeVoucherBtn').addEventListener('click', () => {
   document.getElementById('processingModal').classList.remove('open');
-  toast('Booking berhasil! Cek E-Voucher Anda', 'success');
+  toast('Booking berhasil! Cek Bukti Reservasi Anda', 'success');
   document.querySelector('.nav-btn[data-tab="mybookings"]').click();
 });
 
