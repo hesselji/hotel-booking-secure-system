@@ -6,6 +6,7 @@
   <title>LuxeBooking · Customer Panel</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-X45pIFFnMTz_376A"></script>
   <style>
     /* ====== SELURUH CSS ASLI TIDAK DIUBAH ====== */
     :root {
@@ -344,9 +345,7 @@
           <h2>Booking Saya</h2>
           <p>Riwayat dan status reservasi Anda</p>
         </div>
-        <button id="cancelAllBtn" style="background:rgba(224,92,92,0.1); border:1px solid rgba(224,92,92,0.3); border-radius:10px; padding:0.6rem 1.2rem; color:var(--red); font-family:var(--font-body); font-size:0.82rem; cursor:pointer; transition:0.2s;">
-          <i class="fas fa-trash"></i> Hapus Semua
-        </button>
+
       </div>
 
       <div class="table-wrap">
@@ -362,6 +361,7 @@
               <th>Status</th>
               <th>Bukti Reservasi</th>
               <th>Metode Bayar</th>
+              <th>Aksi</th> 
             </tr>
           </thead>
           <tbody id="myBookingsBody">
@@ -424,15 +424,9 @@
   <div class="modal" id="paymentModalContent">
     <h3><i class="fas fa-shield-halved"></i> Konfirmasi Pembayaran</h3>
     <div class="booking-summary" id="modalSummary"></div>
-    <div class="payment-methods">
-      <label>Metode Pembayaran — P3.0 Pembayaran</label>
-      <div class="method-grid">
-        <button class="method-btn" data-method="Kartu Kredit"><i class="fas fa-credit-card" style="color:var(--gold)"></i> Kartu Kredit</button>
-        <button class="method-btn" data-method="Transfer Bank"><i class="fas fa-building-columns" style="color:var(--gold)"></i> Transfer Bank</button>
-        <button class="method-btn" data-method="QRIS"><i class="fas fa-qrcode" style="color:var(--gold)"></i> QRIS</button>
-        <button class="method-btn" data-method="E-Wallet"><i class="fas fa-wallet" style="color:var(--gold)"></i> E-Wallet</button>
-      </div>
-    </div>
+    
+    <!-- (Bagian method-grid sudah dihapus dari sini) -->
+
     <div class="guests-field">
       <div class="form-group">
         <label>Jumlah Tamu</label>
@@ -444,9 +438,9 @@
         </select>
       </div>
     </div>
-    <div class="modal-actions">
+    <div class="modal-actions" style="margin-top: 1.5rem;">
       <button class="btn-cancel" id="cancelPaymentBtn">Batal</button>
-      <button class="btn-pay" id="confirmPaymentBtn"><i class="fas fa-lock"></i> Bayar Sekarang</button>
+      <button class="btn-pay" id="confirmPaymentBtn"><i class="fas fa-lock"></i> Lanjutkan ke Pembayaran</button>
     </div>
   </div>
 </div>
@@ -695,29 +689,25 @@ document.getElementById('confirmUnitBtn').addEventListener('click', () => {
 });
 
 // ================== PEMBAYARAN ==================
-document.querySelectorAll('.method-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    selectedPaymentMethod = btn.getAttribute('data-method');
-  });
-});
 
 document.getElementById('cancelPaymentBtn').addEventListener('click', () => {
   document.getElementById('paymentModal').classList.remove('open');
 });
 
+// === BAGIAN UTAMA YANG DIUBAH UNTUK MIDTRANS ===
 document.getElementById('confirmPaymentBtn').addEventListener('click', async () => {
-  if (!selectedPaymentMethod) return toast('Pilih metode pembayaran', 'error');
-  
+  // Matikan modal konfirmasi lokal
   document.getElementById('paymentModal').classList.remove('open');
+  
+  // Tampilkan loading screen
   document.getElementById('processingModal').classList.add('open');
   document.getElementById('processingContent').style.display = 'block';
   document.getElementById('voucherContent').style.display = 'none';
 
   const guests = parseInt(document.getElementById('guestCount').value) || 1;
+  let totalHarga = pendingUnitData.nights * pendingUnitData.pricePerNight;
   
-  // Buat booking
+  // 1. Amankan Booking di Database (Status Pending)
   let bookingRes = await apiCall('create_booking', {
     room_unit_id: selectedUnit.unit_id,
     checkin_date: pendingUnitData.checkin,
@@ -730,19 +720,40 @@ document.getElementById('confirmPaymentBtn').addEventListener('click', async () 
     return toast(bookingRes.message, 'error');
   }
 
-  // Proses pembayaran
-  let payRes = await apiCall('process_payment', {
+  // 2. Minta Token Snap ke PHP kita
+  let tokenRes = await apiCall('get_snap_token', {
     booking_id: bookingRes.booking_id,
-    method: selectedPaymentMethod
+    total_price: totalHarga
   });
 
-  if (payRes.success) {
-    document.getElementById('voucherCode').textContent = payRes.e_voucher;
-    document.getElementById('processingContent').style.display = 'none';
-    document.getElementById('voucherContent').style.display = 'block';
+  document.getElementById('processingModal').classList.remove('open');
+
+  if (tokenRes.success) {
+    // 3. PANGGIL POPUP MIDTRANS
+    window.snap.pay(tokenRes.token, {
+      onSuccess: function(result){
+        toast('Pembayaran berhasil dikonfirmasi!', 'success');
+        // Tutup modal loading lokal jika masih terbuka
+        document.getElementById('processingModal').classList.remove('open');
+        document.querySelector('.nav-btn[data-tab="mybookings"]').click();
+      },
+      onPending: function(result){
+        toast('Menunggu pembayaran Anda diselesaikan.', 'info');
+        document.getElementById('processingModal').classList.remove('open');
+        document.querySelector('.nav-btn[data-tab="mybookings"]').click();
+      },
+      onError: function(result){
+        toast('Pembayaran gagal.', 'error');
+        document.getElementById('processingModal').classList.remove('open');
+      },
+      onClose: function(){
+        toast('Anda menutup halaman pembayaran.', 'error');
+        document.getElementById('processingModal').classList.remove('open');
+        document.querySelector('.nav-btn[data-tab="mybookings"]').click();
+      }
+    });
   } else {
-    document.getElementById('processingModal').classList.remove('open');
-    toast(payRes.message, 'error');
+    toast('Gagal memuat sistem pembayaran.', 'error');
   }
 });
 
@@ -753,12 +764,13 @@ document.getElementById('closeVoucherBtn').addEventListener('click', () => {
 });
 
 // ================== MY BOOKINGS ==================
+// ================= MY BOOKINGS =================
 async function loadMyBookings() {
   let json = await apiCall('get_bookings', {}, 'GET');
   const myBookings = json.data || [];
   const tbody = document.getElementById('myBookingsBody');
   if (!myBookings.length) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:2.5rem;">Belum ada booking. Cari kamar sekarang!</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text-muted);padding:2.5rem;">Belum ada booking. Cari kamar sekarang!</td></tr>';
     return;
   }
   tbody.innerHTML = myBookings.slice().reverse().map(b => `
@@ -772,21 +784,30 @@ async function loadMyBookings() {
       <td>${b.payment_status === 'paid' ? '<span class="badge-paid">✓ Lunas</span>' : '<span class="badge-pending">⏳ Pending</span>'}</td>
       <td>${b.e_voucher ? `<span class="voucher-small">${b.e_voucher}</span>` : '–'}</td>
       <td style="color:var(--text-muted); font-size:0.78rem;">${b.metode_pembayaran || '–'}</td>
+      <td>
+        ${b.payment_status === 'pending' 
+          ? `<button onclick="hapusBooking('${b.id}')" style="background:rgba(224,92,92,0.1); border:1px solid rgba(224,92,92,0.4); color:var(--red); border-radius:6px; padding:5px 10px; cursor:pointer; font-size:0.75rem; transition:0.2s;">Batalkan</button>` 
+          : `<span style="font-size:0.75rem; color:var(--text-muted);"><i class="fas fa-lock"></i> Selesai</span>`
+        }
+      </td>
     </tr>
   `).join('');
 }
 
-document.getElementById('cancelAllBtn').addEventListener('click', async () => {
-  if (!confirm('Hapus semua booking Anda? Tindakan ini tidak bisa dibatalkan.')) return;
-  let json = await apiCall('get_bookings', {}, 'GET');
-  let bookings = json.data || [];
-  for (let b of bookings) {
-    await apiCall('delete_booking', { booking_id: b.id });
+// FITUR BATALKAN BOOKING PER ITEM (Hanya untuk yang Pending)
+window.hapusBooking = async (id) => {
+  if (!confirm('Yakin ingin membatalkan pesanan ini?')) return;
+  
+  let res = await apiCall('delete_booking', { booking_id: id });
+  if (res.success) {
+    toast('Booking berhasil dibatalkan', 'info');
+    loadMyBookings();
+    loadHomeTab();
+  } else {
+    // Akan menampilkan pesan error jika API menolak (misal: karena sudah Lunas)
+    toast(res.message || 'Gagal membatalkan booking', 'error');
   }
-  loadMyBookings();
-  loadHomeTab();
-  toast('Semua booking dihapus', 'info');
-});
+};
 
 // ================== PROFILE ==================
 async function loadProfile() {

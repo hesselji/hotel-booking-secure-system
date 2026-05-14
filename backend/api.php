@@ -9,7 +9,7 @@ switch ($action) {
     case 'login':
         $email = trim($input['email'] ?? '');
         $pass  = $input['password'] ?? '';
-        $stmt  = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND deleted_at IS NULL");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
         if ($user && password_verify($pass, $user['password'])) {
@@ -169,6 +169,19 @@ switch ($action) {
     case 'delete_booking':
         $user = authenticate($pdo);
         $bid = $input['booking_id'] ?? '';
+        
+        // 1. Cek dulu statusnya di database
+        $stmt = $pdo->prepare("SELECT payment_status FROM bookings WHERE id = ?");
+        $stmt->execute([$bid]);
+        $status = $stmt->fetchColumn();
+        
+        // 2. Jika sudah lunas, TOLAK!
+        if ($status === 'paid') {
+            echo json_encode(['success' => false, 'message' => 'Gagal: Booking yang sudah LUNAS tidak dapat dihapus!']);
+            break;
+        }
+        
+        // 3. Jika masih pending, izinkan hapus
         $pdo->prepare("DELETE FROM bookings WHERE id = ?")->execute([$bid]);
         echo json_encode(['success' => true]);
         break;
@@ -194,8 +207,9 @@ switch ($action) {
         $pdo->beginTransaction();
         try {
             $pdo->prepare("UPDATE bookings SET payment_status='paid', e_voucher=?, metode_pembayaran=? WHERE id=?")->execute([$voucher, $mtd, $bid]);
-            $pdo->prepare("INSERT INTO transactions (id, booking_id, customer_id, amount, method, status, e_voucher) VALUES (?,?,?,?,?,'SUCCESS',?)")
-                ->execute(['TRX'.time(), $bid, $book['customer_id'], $book['total_price'], $mtd, $voucher]);
+            // Insert Transaksi (Sekarang memasukkan midtrans_id juga)
+            $pdo->prepare("INSERT INTO transactions (id, midtrans_id, booking_id, customer_id, amount, method, status, e_voucher) VALUES (?,?,?,?,?,?,'SUCCESS',?)")
+                ->execute(['TRX'.time(), $midtrans_id, $order_id, $customer_id, $gross_amount, $payment_type, $voucher]);
             $pdo->commit();
             echo json_encode(['success' => true, 'e_voucher' => $voucher]);
         } catch (Exception $e) {
@@ -209,7 +223,8 @@ switch ($action) {
         $user = authenticate($pdo);
         if ($user['role'] !== 'admin') { echo json_encode(['success' => false]); break; }
         $totalBookings = $pdo->query("SELECT COUNT(*) FROM bookings")->fetchColumn();
-        $totalRevenue = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE status = 'SUCCESS'")->fetchColumn();
+        // Menggunakan UPPER agar aman dari perbedaan huruf besar/kecil
+        $totalRevenue = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE UPPER(status) = 'SUCCESS'")->fetchColumn();
         $totalUnits = $pdo->query("SELECT COUNT(*) FROM room_units WHERE is_active = 1")->fetchColumn();
         $totalCustomers = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'customer'")->fetchColumn();
         echo json_encode(['success' => true, 'data' => [
@@ -220,15 +235,134 @@ switch ($action) {
     case 'get_transactions':
         $user = authenticate($pdo);
         if ($user['role'] !== 'admin') { echo json_encode(['success' => false]); break; }
-        $stmt = $pdo->query("SELECT t.*, u.email as customer_email FROM transactions t JOIN users u ON t.customer_id = u.id ORDER BY t.created_at DESC LIMIT 10");
+        
+        $stmt = $pdo->query("
+            SELECT t.*, u.name as customer_name, u.email as customer_email 
+            FROM transactions t 
+            JOIN users u ON t.customer_id = u.id 
+            WHERE UPPER(t.status) = 'SUCCESS' 
+            ORDER BY t.id DESC 
+            LIMIT 10
+        ");
         echo json_encode(['success' => true, 'data' => $stmt->fetchAll()]);
         break;
 
     case 'get_customers':
         $user = authenticate($pdo);
         if ($user['role'] !== 'admin') { echo json_encode(['success' => false]); break; }
-        $stmt = $pdo->query("SELECT name, email, phone, id_number, joined_at FROM users WHERE role = 'customer' ORDER BY joined_at DESC");
+        $stmt = $pdo->query("SELECT id, name, email, phone, id_number, joined_at 
+                         FROM users 
+                         WHERE role = 'customer' AND deleted_at IS NULL 
+                         ORDER BY joined_at DESC");
         echo json_encode(['success' => true, 'data' => $stmt->fetchAll()]);
+        break;
+    
+    case 'delete_customer':
+        $user = authenticate($pdo);
+        if ($user['role'] !== 'admin') { echo json_encode(['success' => false]); break; }
+        
+        $customerId = $input['customer_id'] ?? '';
+
+        $pdo->prepare("UPDATE users SET deleted_at = NOW() WHERE id = ? AND role = 'customer'")
+            ->execute([$customerId]);
+            
+        echo json_encode(['success' => true, 'message' => 'Pelanggan berhasil dihapus (Soft Delete)']);
+        break;
+    // ================= MIDTRANS INTEGRATION =================
+    case 'get_snap_token':
+        $user = authenticate($pdo);
+        $booking_id = $input['booking_id'] ?? '';
+        $total_price = $input['total_price'] ?? 0;
+        
+        $payload = [
+            'transaction_details' => [
+                'order_id' => $booking_id,
+                'gross_amount' => (int) $total_price,
+            ],
+            'customer_details' => [
+                'first_name' => $user['name'],
+                'email' => $user['email'],
+                'phone' => $user['phone'] ?? ''
+            ]
+        ];
+
+        $url = MIDTRANS_IS_PRODUCTION ? 'https://app.midtrans.com/snap/v1/transactions' : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
+        $serverKey = MIDTRANS_SERVER_KEY . ':';
+        
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Accept: application/json',
+            'Authorization: Basic ' . base64_encode($serverKey)
+        ]);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        
+        $response = curl_exec($ch);
+        curl_close($ch);
+        
+        $result = json_decode($response, true);
+        if (isset($result['token'])) {
+            echo json_encode(['success' => true, 'token' => $result['token']]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Gagal mendapatkan token dari Midtrans', 'debug' => $result]);
+        }
+        break;
+
+    case 'midtrans_webhook':
+        // Midtrans akan mengirim data otomatis ke sini tanpa token login
+        $notif = json_decode(file_get_contents('php://input'), true);
+        if (!$notif) exit;
+
+        $order_id = $notif['order_id'];
+        $status_code = $notif['status_code'];
+        $gross_amount = $notif['gross_amount'];
+        $signature_key = $notif['signature_key'];
+        $transaction_status = $notif['transaction_status'];
+        $payment_type = $notif['payment_type'];
+        $midtrans_id = $notif['transaction_id'];
+
+        // 1. Verifikasi Keamanan (Pastikan benar-benar dari Midtrans)
+        $my_signature = hash('sha512', $order_id . $status_code . $gross_amount . MIDTRANS_SERVER_KEY);
+        if ($my_signature !== $signature_key) {
+            http_response_code(403);
+            exit('Invalid Signature');
+        }
+
+        // 2. Jika Lunas (Settlement/Capture), Eksekusi Stored Procedure
+        if ($transaction_status == 'settlement' || $transaction_status == 'capture') {
+            try {
+                // Catat transaksi via database (Update manual karena Stored Procedure awal dirancang utk parameter beda)
+                $pdo->beginTransaction();
+                
+                $voucher = 'EV-' . strtoupper(substr($order_id, -8));
+                
+                // Update Booking
+                $stmt = $pdo->prepare("UPDATE bookings SET payment_status='paid', e_voucher=?, metode_pembayaran=? WHERE id=? AND payment_status='pending'");
+                $stmt->execute([$voucher, $payment_type, $order_id]);
+                
+                // Cek apakah booking berhasil diupdate (jika baris berubah)
+                if ($stmt->rowCount() > 0) {
+                    // Ambil customer ID untuk log transaksi
+                    $cust = $pdo->prepare("SELECT customer_id FROM bookings WHERE id=?");
+                    $cust->execute([$order_id]);
+                    $customer_id = $cust->fetchColumn();
+
+                    // Insert Transaksi
+                    // Insert Transaksi (Sekarang memasukkan midtrans_id juga)
+                    $pdo->prepare("INSERT INTO transactions (id, midtrans_id, booking_id, customer_id, amount, method, status, e_voucher) VALUES (?,?,?,?,?,?,'SUCCESS',?)")
+                        ->execute(['TRX'.time(), $midtrans_id, $order_id, $customer_id, $gross_amount, $payment_type, $voucher]);
+                }
+                
+                $pdo->commit();
+            } catch (Exception $e) {
+                $pdo->rollBack();
+            }
+        }
+        
+        http_response_code(200);
+        echo json_encode(['status' => 'OK']);
         break;
 
     default:

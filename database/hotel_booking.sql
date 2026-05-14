@@ -16,75 +16,83 @@ DROP TABLE IF EXISTS `sessions`;
 DROP TABLE IF EXISTS `users`;
 
 CREATE TABLE `users` (
-  `id` VARCHAR(36) NOT NULL,
-  `name` VARCHAR(100) NOT NULL,
-  `email` VARCHAR(150) NOT NULL,
-  `password` VARCHAR(255) NOT NULL,
-  `phone` VARCHAR(20) DEFAULT NULL,
-  `id_number` VARCHAR(30) DEFAULT NULL,
-  `role` ENUM('customer','admin') NOT NULL DEFAULT 'customer',
-  `joined_at` DATE NOT NULL DEFAULT (CURRENT_DATE),
+  `id` varchar(36) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `email` varchar(150) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `id_number` varchar(30) DEFAULT NULL,
+  `role` enum('customer','admin') NOT NULL DEFAULT 'customer',
+  `joined_at` date NOT NULL DEFAULT curdate(),
+  `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_users_email` (`email`)
 ) ENGINE=InnoDB;
 
 CREATE TABLE `rooms` (
-  `id` VARCHAR(36) NOT NULL,
-  `type` VARCHAR(80) NOT NULL,
-  `price_per_night` DECIMAL(12,2) NOT NULL,
-  `description` TEXT,
-  `emoji` VARCHAR(8) DEFAULT '🛏️',
-  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `id` varchar(36) NOT NULL,
+  `type` varchar(80) NOT NULL,
+  `price_per_night` decimal(12,2) NOT NULL,
+  `description` text DEFAULT NULL,
+  `emoji` varchar(8) DEFAULT '?️',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
 CREATE TABLE `room_units` (
-  `id` VARCHAR(36) NOT NULL,
-  `room_id` VARCHAR(36) NOT NULL,
-  `room_number` VARCHAR(10) NOT NULL,
-  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `id` varchar(36) NOT NULL,
+  `room_id` varchar(36) NOT NULL,
+  `room_number` varchar(10) NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_room_number` (`room_number`),
-  CONSTRAINT `fk_unit_room` FOREIGN KEY (`room_id`) REFERENCES `rooms`(`id`) ON DELETE CASCADE
+  KEY `fk_unit_room` (`room_id`),
+  CONSTRAINT `fk_unit_room` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 CREATE TABLE `bookings` (
-  `id` VARCHAR(36) NOT NULL,
-  `customer_id` VARCHAR(36) NOT NULL,
-  `room_unit_id` VARCHAR(36) NOT NULL,
-  `checkin_date` DATE NOT NULL,
-  `checkout_date` DATE NOT NULL,
-  `nights` SMALLINT NOT NULL,
-  `guests` SMALLINT NOT NULL DEFAULT 1,
-  `total_price` DECIMAL(14,2) NOT NULL,
-  `payment_status` ENUM('pending','paid','cancelled') NOT NULL DEFAULT 'pending',
-  `e_voucher` VARCHAR(30) DEFAULT NULL,
-  `metode_pembayaran` VARCHAR(30) DEFAULT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `id` varchar(36) NOT NULL,
+  `customer_id` varchar(36) NOT NULL,
+  `room_unit_id` varchar(36) NOT NULL,
+  `checkin_date` date NOT NULL,
+  `checkout_date` date NOT NULL,
+  `nights` smallint(6) NOT NULL,
+  `guests` smallint(6) NOT NULL DEFAULT 1,
+  `total_price` decimal(14,2) NOT NULL,
+  `payment_status` enum('pending','paid','cancelled') NOT NULL DEFAULT 'pending',
+  `e_voucher` varchar(30) DEFAULT NULL,
+  `metode_pembayaran` varchar(30) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
-  CONSTRAINT `fk_booking_cust` FOREIGN KEY (`customer_id`) REFERENCES `users`(`id`),
-  CONSTRAINT `fk_booking_unit` FOREIGN KEY (`room_unit_id`) REFERENCES `room_units`(`id`)
+  KEY `fk_booking_cust` (`customer_id`),
+  KEY `fk_booking_unit` (`room_unit_id`),
+  CONSTRAINT `fk_booking_cust` FOREIGN KEY (`customer_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `fk_booking_unit` FOREIGN KEY (`room_unit_id`) REFERENCES `room_units` (`id`)
 ) ENGINE=InnoDB;
 
 CREATE TABLE `transactions` (
-  `id` VARCHAR(36) NOT NULL,
-  `booking_id` VARCHAR(36) NOT NULL,
-  `customer_id` VARCHAR(36) NOT NULL,
-  `amount` DECIMAL(14,2) NOT NULL,
-  `method` ENUM('Kartu Kredit','Transfer Bank','QRIS','E-Wallet') NOT NULL,
-  `status` ENUM('SUCCESS','FAILED','REFUNDED','PENDING') NOT NULL DEFAULT 'PENDING',
-  `e_voucher` VARCHAR(30) DEFAULT NULL,
+  `id` varchar(36) NOT NULL,
+  `midtrans_id` varchar(100) DEFAULT NULL,
+  `booking_id` varchar(36) NOT NULL,
+  `customer_id` varchar(36) NOT NULL,
+  `amount` decimal(14,2) NOT NULL,
+  `method` varchar(50) NOT NULL,
+  `status` varchar(50) NOT NULL DEFAULT 'PENDING',
+  `e_voucher` varchar(30) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  CONSTRAINT `fk_trx_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings`(`id`),
-  CONSTRAINT `fk_trx_customer` FOREIGN KEY (`customer_id`) REFERENCES `users`(`id`)
+  KEY `fk_trx_booking` (`booking_id`),
+  KEY `fk_trx_customer` (`customer_id`),
+  CONSTRAINT `fk_trx_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`),
+  CONSTRAINT `fk_trx_customer` FOREIGN KEY (`customer_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB;
 
 CREATE TABLE `sessions` (
-  `token` VARCHAR(128) NOT NULL,
-  `user_id` VARCHAR(36) NOT NULL,
-  `expires_at` DATETIME NOT NULL,
+  `token` varchar(128) NOT NULL,
+  `user_id` varchar(36) NOT NULL,
+  `expires_at` datetime NOT NULL,
   PRIMARY KEY (`token`),
-  CONSTRAINT `fk_sess_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)
+  KEY `fk_sess_user` (`user_id`),
+  CONSTRAINT `fk_sess_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB;
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `id_number`, `role`) VALUES

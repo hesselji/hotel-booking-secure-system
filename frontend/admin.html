@@ -248,6 +248,7 @@
               <th>No. HP</th>
               <th>Identitas (KTP)</th>
               <th>Bergabung</th>
+              <th>Aksi</th>
             </tr>
           </thead>
           <tbody id="adminCustomersBody"></tbody>
@@ -306,6 +307,34 @@
   </div>
 </div>
 
+<!-- ========== CUSTOMER MODAL (EDIT) ========== -->
+<div class="modal-overlay" id="customerModal">
+  <div class="modal">
+    <h3 id="customerModalTitle"><i class="fas fa-user-edit"></i> Edit Pelanggan</h3>
+    <input type="hidden" id="customerIdInput">
+    
+    <div class="form-group">
+      <label>Nama Lengkap</label>
+      <input type="text" id="customerName" required>
+    </div>
+    
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+      <div class="form-group">
+        <label>No. WhatsApp / HP</label>
+        <input type="text" id="customerPhone" placeholder="08...">
+      </div>
+      <div class="form-group">
+        <label>No. Identitas (KTP/Paspor)</label>
+        <input type="text" id="customerIdNumber">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="closeCustomerModal">Batal</button>
+      <button class="btn-gold" id="saveCustomerBtn" style="flex:2;">Simpan Perubahan</button>
+    </div>
+  </div>
+</div>
 <script>
 // ================== KONFIGURASI ==================
 const API = '../backend/api.php';
@@ -383,7 +412,7 @@ document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
   });
 });
 
-function initAdminPanel() {
+ function initAdminPanel() {
   const activeTab = document.querySelector('.nav-btn.active').getAttribute('data-tab');
   if(activeTab === 'dashboard') loadDashboardStats();
   if(activeTab === 'bookings') loadBookingsTable();
@@ -393,36 +422,69 @@ function initAdminPanel() {
 
 // ─── 1. DASHBOARD TAB ───
 async function loadDashboardStats() {
-  let statsJson = await apiCall('get_stats', {}, 'GET');
-  let trxsJson = await apiCall('get_transactions', {}, 'GET');
+  try {
+    let statsJson = await apiCall('get_stats', {}, 'GET');
+    let trxsJson = await apiCall('get_transactions', {}, 'GET');
 
-  if(statsJson.success) {
-    const s = statsJson.data;
-    document.getElementById('adminStats').innerHTML = `
-      <div class="stat-card"><div class="stat-icon"><i class="fas fa-wallet"></i></div>
-        <h3>${formatRupiah(s.totalRevenue)}</h3><p>Total Pendapatan</p></div>
-      <div class="stat-card"><div class="stat-icon"><i class="fas fa-ticket"></i></div>
-        <h3>${s.totalBookings}</h3><p>Total Reservasi</p></div>
-      <div class="stat-card"><div class="stat-icon"><i class="fas fa-bed"></i></div>
-        <h3>${s.totalUnits}</h3><p>Total Unit Kamar</p></div>
-      <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div>
-        <h3>${s.totalCustomers}</h3><p>Pelanggan Aktif</p></div>
-    `;
-  }
+    // Load Kotak Statistik
+    if(statsJson && statsJson.success) {
+      const s = statsJson.data;
+      document.getElementById('adminStats').innerHTML = `
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-wallet"></i></div>
+          <h3>${formatRupiah(s.totalRevenue || 0)}</h3><p>Total Pendapatan</p></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-ticket"></i></div>
+          <h3>${s.totalBookings || 0}</h3><p>Total Reservasi</p></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-bed"></i></div>
+          <h3>${s.totalUnits || 0}</h3><p>Total Unit Kamar</p></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div>
+          <h3>${s.totalCustomers || 0}</h3><p>Pelanggan Aktif</p></div>
+      `;
+    }
 
-  const tbody = document.getElementById('recentTrxBody');
-  if(trxsJson.success && trxsJson.data.length > 0) {
-    tbody.innerHTML = trxsJson.data.map(t => `
-      <tr>
-        <td style="font-family:monospace; color:var(--gold);">${t.id}</td>
-        <td>${t.customer_email}</td>
-        <td style="font-weight:bold;">${formatRupiah(t.amount)}</td>
-        <td>${t.method}</td>
-        <td>${t.created_at}</td>
-      </tr>
-    `).join('');
-  } else {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Belum ada transaksi</td></tr>';
+    // Load Tabel Transaksi Terakhir
+    const tbody = document.getElementById('recentTrxBody');
+    if(trxsJson && trxsJson.success && Array.isArray(trxsJson.data) && trxsJson.data.length > 0) {
+      tbody.innerHTML = trxsJson.data.map(t => {
+        
+        let methodName = t.method ? String(t.method).toUpperCase() : 'MANUAL';
+        let custName = t.customer_name ? t.customer_name : 'Customer';
+        
+        // Tetap tampilkan ID Midtrans jika ada, kalau tidak ada pakai ID TRX biasa
+        let displayId = t.midtrans_id ? String(t.midtrans_id).substring(0,12) + '...' : t.id;
+
+        // --- TRIK EXTRACT TANGGAL DARI "TRX" ---
+        let txDate = '-';
+        // PASTI ambil dari t.id (karena id utamanya selalu berawalan TRX)
+        if (t.id && t.id.startsWith('TRX')) {
+            let timestamp = parseInt(t.id.replace('TRX', '')); 
+            if (!isNaN(timestamp)) {
+                let dateObj = new Date(timestamp * 1000); 
+                txDate = dateObj.toLocaleString('id-ID', { 
+                    day: '2-digit', month: 'short', year: 'numeric', 
+                    hour: '2-digit', minute: '2-digit' 
+                });
+            }
+        } 
+        // Jika suatu saat ada kolom created_at, gunakan itu
+        else if (t.created_at) {
+            txDate = t.created_at; 
+        }
+
+        return `
+          <tr>
+            <td style="font-family:monospace; color:var(--gold);" title="${t.midtrans_id || t.id}">${displayId}</td>
+            <td><strong>${custName}</strong><br><small style="color:var(--text-muted)">${t.customer_email}</small></td>
+            <td style="font-weight:bold; color:var(--gold);">${formatRupiah(t.amount || 0)}</td>
+            <td><span class="badge-active" style="font-size:0.65rem;">${methodName}</span></td>
+            <td style="font-size:0.8rem; color:var(--text-muted);">${txDate}</td>
+          </tr>
+        `;
+      }).join('');
+    } else {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:2rem;">Belum ada transaksi sukses yang tercatat.</td></tr>';
+    }
+  } catch (error) {
+    console.error("Dashboard error macet di:", error);
   }
 }
 
@@ -449,8 +511,12 @@ async function loadBookingsTable() {
           '<span class="badge-pending">Pending</span>'}
       </td>
       <td>
-        ${b.payment_status === 'pending' ? `<button class="action-btn" onclick="confirmPayment('${b.id}')" title="Tandai Lunas"><i class="fas fa-check"></i></button>` : ''}
-        <button class="action-btn delete" onclick="deleteBooking('${b.id}')" title="Hapus Booking"><i class="fas fa-trash"></i></button>
+        ${b.payment_status === 'pending' ? `
+          <button class="action-btn" onclick="confirmPayment('${b.id}')" title="Tandai Lunas"><i class="fas fa-check"></i></button>
+          <button class="action-btn delete" onclick="deleteBooking('${b.id}')" title="Hapus Booking"><i class="fas fa-trash"></i></button>
+        ` : `
+          <span style="font-size:0.75rem; color:var(--text-muted);"><i class="fas fa-lock"></i> Permanen</span>
+        `}
       </td>
     </tr>
   `).join('');
@@ -575,10 +641,11 @@ async function loadCustomersTable() {
   const tbody = document.getElementById('adminCustomersBody');
   
   if(!json.success || json.data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Belum ada data pelanggan</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Belum ada data pelanggan</td></tr>';
     return;
   }
 
+  // Tampilkan data beserta tombol aksi Edit & Delete
   tbody.innerHTML = json.data.map(c => `
     <tr>
       <td><strong>${c.name}</strong></td>
@@ -586,9 +653,62 @@ async function loadCustomersTable() {
       <td>${c.phone || '-'}</td>
       <td>${c.id_number || '-'}</td>
       <td>${c.joined_at}</td>
+      <td>
+        <button class="action-btn" onclick='editCustomer(${JSON.stringify(c)})' title="Edit Pelanggan"><i class="fas fa-edit"></i></button>
+        <button class="action-btn delete" onclick='deleteCustomer("${c.id}")' title="Hapus Pelanggan"><i class="fas fa-trash"></i></button>
+      </td>
     </tr>
   `).join('');
 }
+
+// Fitur Modal Edit
+const customerModal = document.getElementById('customerModal');
+
+window.editCustomer = (customer) => {
+  document.getElementById('customerIdInput').value = customer.id;
+  document.getElementById('customerName').value = customer.name;
+  document.getElementById('customerPhone').value = customer.phone || '';
+  document.getElementById('customerIdNumber').value = customer.id_number || '';
+  customerModal.classList.add('open');
+};
+
+document.getElementById('closeCustomerModal').addEventListener('click', () => {
+  customerModal.classList.remove('open');
+});
+
+// Fitur Simpan Edit
+document.getElementById('saveCustomerBtn').addEventListener('click', async () => {
+  const payload = {
+    customer_id: document.getElementById('customerIdInput').value,
+    name: document.getElementById('customerName').value.trim(),
+    phone: document.getElementById('customerPhone').value.trim(),
+    id_number: document.getElementById('customerIdNumber').value.trim()
+  };
+
+  if(!payload.name) return toast('Nama pelanggan tidak boleh kosong!', 'error');
+
+  let res = await apiCall('edit_customer', payload);
+  if(res.success) {
+    toast('Data pelanggan berhasil diperbarui', 'success');
+    customerModal.classList.remove('open');
+    loadCustomersTable(); // Refresh tabel
+  } else {
+    toast(res.message || 'Gagal memperbarui data', 'error');
+  }
+});
+
+// Fitur Hapus (Soft Delete)
+window.deleteCustomer = async (id) => {
+  if(!confirm('Yakin ingin menghapus pelanggan ini? (Data transaksi mereka akan tetap aman di laporan keuangan)')) return;
+  
+  let json = await apiCall('delete_customer', { customer_id: id });
+  if(json.success) {
+    toast('Pelanggan dinonaktifkan', 'info');
+    loadCustomersTable(); // Refresh tabel
+  } else {
+    toast(json.message || 'Gagal menghapus pelanggan', 'error');
+  }
+};
 </script>
 </body>
 </html>

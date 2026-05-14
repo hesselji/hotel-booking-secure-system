@@ -44,8 +44,14 @@
         <button id="showRegisterBtn">Daftar</button>
     </div>
     <div id="loginPanel">
-        <div class="field"><i class="fas fa-envelope"></i><input type="email" id="loginEmail" value="customer@demo.com"></div>
-        <div class="field"><i class="fas fa-lock"></i><input type="password" id="loginPassword" value="password123"></div>
+        <div class="field">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="loginEmail" placeholder="Masukkan Email Anda">
+        </div>
+        <div class="field">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="loginPassword" placeholder="Masukkan Password">
+        </div>
         <button class="btn" id="loginSubmitBtn">Masuk</button>
     </div>
     <div id="registerPanel" style="display:none">
@@ -56,7 +62,6 @@
         <div class="field"><i class="fas fa-lock"></i><input type="password" id="regPassword" placeholder="Password (min 6 karakter)"></div>
         <button class="btn" id="registerSubmitBtn">Daftar</button>
     </div>
-    <div class="hint"><i class="fas fa-info-circle"></i> <span>customer@demo.com</span> / <span>password123</span></div>
 </div>
 <script>
 const API = '../backend/api.php';

@@ -42,3 +42,10 @@ function authenticate($pdo) {
     }
     return $user;
 }
+
+// KONFIGURASI MIDTRANS
+// ==========================================
+
+define('MIDTRANS_SERVER_KEY', 'Mid-server-QF1R6wIQdDmui6L4FA4Hk4qC'); 
+define('MIDTRANS_CLIENT_KEY', 'Mid-client-X45pIFFnMTz_376A');
+define('MIDTRANS_IS_PRODUCTION', false); // Ubah ke true jika sudah rilis ke publik
