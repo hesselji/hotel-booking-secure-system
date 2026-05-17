@@ -66,9 +66,11 @@ switch ($action) {
 
     // ================= KAMAR & UNIT =================
     case 'get_rooms':
+        // Menambahkan GROUP_CONCAT agar nomor kamar (101, 102) ikut ditarik dan dikirim ke Admin
         $stmt = $pdo->query("
             SELECT r.id, r.type, r.price_per_night, r.description, r.emoji, r.is_active, 
-                   COUNT(u.id) AS total_units 
+                   COUNT(u.id) AS total_units,
+                   GROUP_CONCAT(u.room_number SEPARATOR ', ') as room_numbers
             FROM rooms r 
             LEFT JOIN room_units u ON r.id = u.room_id AND u.is_active = 1 
             GROUP BY r.id
@@ -79,23 +81,85 @@ switch ($action) {
     case 'add_room':
         $user = authenticate($pdo);
         if ($user['role'] !== 'admin') { echo json_encode(['success'=>false, 'message'=>'Akses ditolak']); break; }
+        
         $id = 'rm_' . bin2hex(random_bytes(4));
-        $type = $input['type'] ?? '';
+        $type = trim($input['type'] ?? '');
         $price = $input['price_per_night'] ?? 0;
-        $desc = $input['description'] ?? '';
+        $desc = trim($input['description'] ?? '');
         $emoji = $input['emoji'] ?? '🛏️';
-        $pdo->prepare("INSERT INTO rooms (id, type, price_per_night, description, emoji) VALUES (?,?,?,?,?)")
-            ->execute([$id, $type, $price, $desc, $emoji]);
-        echo json_encode(['success' => true, 'message' => 'Kamar ditambahkan']);
+        $roomNumbers = $input['room_numbers'] ?? ''; // Format: "101, 102, 103"
+
+        try {
+            $pdo->beginTransaction();
+            
+            // 1. Buat Induk Kamarnya
+            $pdo->prepare("INSERT INTO rooms (id, type, price_per_night, description, emoji) VALUES (?,?,?,?,?)")
+                ->execute([$id, $type, $price, $desc, $emoji]);
+            
+            // 2. Pecah dan masukkan nomor kamarnya satu per satu
+            if (!empty($roomNumbers)) {
+                $numbers = array_map('trim', explode(',', $roomNumbers));
+                foreach ($numbers as $num) {
+                    if (!empty($num)) {
+                        $unitId = 'ru_' . bin2hex(random_bytes(4));
+                        $pdo->prepare("INSERT INTO room_units (id, room_id, room_number) VALUES (?,?,?)")
+                            ->execute([$unitId, $id, $num]);
+                    }
+                }
+            }
+            $pdo->commit();
+            echo json_encode(['success' => true, 'message' => 'Tipe Kamar dan Nomor Unit berhasil ditambahkan!']);
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            // Error 23000 adalah kode SQL untuk Duplicate Entry (Nomor Kembar)
+            if ($e->getCode() == 23000) {
+                echo json_encode(['success' => false, 'message' => 'Gagal: Ada nomor kamar yang sudah dipakai di tipe kamar lain!']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Gagal menyimpan data kamar.']);
+            }
+        }
         break;
 
     case 'update_room':
         $user = authenticate($pdo);
         if ($user['role'] !== 'admin') { echo json_encode(['success'=>false]); break; }
+        
         $id = $input['id'] ?? '';
-        $pdo->prepare("UPDATE rooms SET type=?, price_per_night=?, description=?, emoji=?, is_active=? WHERE id=?")
-            ->execute([$input['type'], $input['price_per_night'], $input['description'], $input['emoji'], $input['is_active'], $id]);
-        echo json_encode(['success' => true]);
+        $roomNumbers = $input['room_numbers'] ?? '';
+        
+        try {
+            $pdo->beginTransaction();
+            // 1. Update info kamar
+            $pdo->prepare("UPDATE rooms SET type=?, price_per_night=?, description=?, emoji=?, is_active=? WHERE id=?")
+                ->execute([$input['type'], $input['price_per_night'], $input['description'], $input['emoji'], $input['is_active'], $id]);
+            
+            // 2. Tambahkan nomor kamar baru jika ada yang diketik Admin
+            if (!empty($roomNumbers)) {
+                $numbers = array_map('trim', explode(',', $roomNumbers));
+                foreach ($numbers as $num) {
+                    if (!empty($num)) {
+                        // Cek apakah nomor ini sudah ada di database
+                        $check = $pdo->prepare("SELECT id FROM room_units WHERE room_number = ?");
+                        $check->execute([$num]);
+                        if (!$check->fetch()) {
+                            // Jika nomor belum ada, tambahkan sebagai kamar baru
+                            $unitId = 'ru_' . bin2hex(random_bytes(4));
+                            $pdo->prepare("INSERT INTO room_units (id, room_id, room_number) VALUES (?,?,?)")
+                                ->execute([$unitId, $id, $num]);
+                        }
+                    }
+                }
+            }
+            $pdo->commit();
+            echo json_encode(['success' => true]);
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            if ($e->getCode() == 23000) {
+                echo json_encode(['success' => false, 'message' => 'Gagal: Nomor kamar baru yang Anda ketik sudah ada di database!']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Terjadi kesalahan sistem.']);
+            }
+        }
         break;
 
     case 'delete_room':

@@ -276,8 +276,8 @@
         <input type="number" id="roomPrice" required>
       </div>
       <div class="form-group">
-        <label>Total Stok Kamar</label>
-        <input type="number" id="roomStock" required>
+        <label>Nomor Kamar (Pisahkan dgn koma)</label>
+        <input type="text" id="roomNumbers" placeholder="Contoh: 101, 102, 103" required>
       </div>
     </div>
 
@@ -512,8 +512,7 @@ async function loadBookingsTable() {
       </td>
       <td>
         ${b.payment_status === 'pending' ? `
-          <button class="action-btn" onclick="confirmPayment('${b.id}')" title="Tandai Lunas"><i class="fas fa-check"></i></button>
-          <button class="action-btn delete" onclick="deleteBooking('${b.id}')" title="Hapus Booking"><i class="fas fa-trash"></i></button>
+          <button class="action-btn delete" onclick="deleteBooking('${b.id}')" title="Hapus Booking (Tolak)"><i class="fas fa-trash"></i></button>
         ` : `
           <span style="font-size:0.75rem; color:var(--text-muted);"><i class="fas fa-lock"></i> Permanen</span>
         `}
@@ -521,17 +520,6 @@ async function loadBookingsTable() {
     </tr>
   `).join('');
 }
-
-window.confirmPayment = async (id) => {
-  if(!confirm('Tandai booking ini sebagai LUNAS? Bukti Reservasi akan digenerate otomatis.')) return;
-  let json = await apiCall('process_payment', { booking_id: id, method: 'Manual by Admin' });
-  if(json.success) {
-    toast('Pembayaran dikonfirmasi', 'success');
-    loadBookingsTable();
-  } else {
-    toast(json.message, 'error');
-  }
-};
 
 window.deleteBooking = async (id) => {
   if(!confirm('Hapus data booking ini secara permanen?')) return;
@@ -570,12 +558,12 @@ async function loadRoomsTable() {
 }
 
 const roomModal = document.getElementById('roomModal');
+
 document.getElementById('openAddRoomBtn').addEventListener('click', () => {
   document.getElementById('roomIdInput').value = '';
   document.getElementById('roomType').value = '';
   document.getElementById('roomPrice').value = '';
-  document.getElementById('roomStock').value = '1'; // Placeholder
-  document.getElementById('roomStock').disabled = true; // Stok dikelola via room_units
+  document.getElementById('roomNumbers').value = ''; 
   document.getElementById('roomEmoji').value = '🛏️';
   document.getElementById('roomDesc').value = '';
   document.getElementById('roomActive').value = '1';
@@ -591,7 +579,7 @@ window.editRoom = (room) => {
   document.getElementById('roomIdInput').value = room.id;
   document.getElementById('roomType').value = room.type;
   document.getElementById('roomPrice').value = room.price_per_night;
-  document.getElementById('roomStock').disabled = true; 
+  document.getElementById('roomNumbers').value = room.room_numbers || ''; 
   document.getElementById('roomEmoji').value = room.emoji || '';
   document.getElementById('roomDesc').value = room.description || '';
   document.getElementById('roomActive').value = room.is_active;
@@ -606,22 +594,34 @@ document.getElementById('saveRoomBtn').addEventListener('click', async () => {
     price_per_night: document.getElementById('roomPrice').value,
     emoji: document.getElementById('roomEmoji').value,
     description: document.getElementById('roomDesc').value,
-    is_active: document.getElementById('roomActive').value
+    is_active: document.getElementById('roomActive').value,
+    room_numbers: document.getElementById('roomNumbers').value.trim() 
   };
 
-  if(!payload.type || !payload.price_per_night) return toast('Lengkapi data wajib!', 'error');
+  if(!payload.type || !payload.price_per_night || !payload.room_numbers) {
+      return toast('Lengkapi data wajib & nomor kamar!', 'error');
+  }
 
   if (id) {
     payload.id = id;
     let res = await apiCall('update_room', payload);
-    if(res.success) toast('Kamar diperbarui', 'success');
+    if(res.success) {
+        toast('Kamar diperbarui', 'success');
+        roomModal.classList.remove('open');
+        loadRoomsTable();
+    } else {
+        toast(res.message, 'error'); // Tampilkan pesan error nomor kembar dari PHP
+    }
   } else {
     let res = await apiCall('add_room', payload);
-    if(res.success) toast('Kamar ditambahkan', 'success');
+    if(res.success) {
+        toast('Kamar ditambahkan', 'success');
+        roomModal.classList.remove('open');
+        loadRoomsTable();
+    } else {
+        toast(res.message, 'error'); // Tampilkan pesan error nomor kembar dari PHP
+    }
   }
-
-  roomModal.classList.remove('open');
-  loadRoomsTable();
 });
 
 window.deleteRoom = async (id) => {
