@@ -114,6 +114,9 @@ Seluruh dokumentasi proyek tersedia pada folder `docs/`:
 * **DFD Level 0 & Level 1**
 * **STRIDE Threat Modeling**
 * **Attack Tree**
+  <img width="4135" height="2338" alt="Attack Tree 1 drawio" src="https://github.com/user-attachments/assets/25cfb4c3-f2c5-4d02-a368-3ecb350e1b24" />
+  <img width="3309" height="2339" alt="Attack Tree 2 drawio" src="https://github.com/user-attachments/assets/4cc5e223-f6d9-4d5c-af0a-d99dace90df7" />
+ 
 * **System Architecture**
 
 ---
