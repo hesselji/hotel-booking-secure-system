@@ -112,12 +112,23 @@ Seluruh dokumentasi proyek tersedia pada folder `docs/`:
 
 * **SRS-Sec** (Security Requirements Specification)
 * **DFD Level 0 & Level 1**
+  <img width="1700" height="792" alt="DFD Secure Software Engineering-DFD LEVEL 0_SISTEM BOOKING HOTEL drawio" src="https://github.com/user-attachments/assets/f926fb64-0287-438e-98b3-57626a0ffb81" />
+  <img width="1700" height="835" alt="DFD Secure Software Engineering-DFD LEVEL 1_SISTEM BOOKING HOTEL drawio" src="https://github.com/user-attachments/assets/f88eb17a-9bec-40f4-ab31-afeb663dcb54" />
+
 * **STRIDE Threat Modeling**
-* **Attack Tree**
-  <img width="4135" height="2338" alt="Attack Tree 1 drawio" src="https://github.com/user-attachments/assets/25cfb4c3-f2c5-4d02-a368-3ecb350e1b24" />
-  <img width="3309" height="2339" alt="Attack Tree 2 drawio" src="https://github.com/user-attachments/assets/4cc5e223-f6d9-4d5c-af0a-d99dace90df7" />
+  <img width="1294" height="500" alt="image" src="https://github.com/user-attachments/assets/e7a7d0b2-97c2-4548-b082-fe61d25a562d" />
+  <img width="1292" height="495" alt="image" src="https://github.com/user-attachments/assets/c03c2b4b-a07a-47eb-b438-0fb649a6b121" />
+  <img width="1288" height="556" alt="image" src="https://github.com/user-attachments/assets/9f2bb62e-48b4-49b3-bd6f-c4a4be0664f0" />
+  <img width="1296" height="580" alt="image" src="https://github.com/user-attachments/assets/d59f5d40-a70e-4233-8c79-a60260592220" />
+  <img width="1294" height="337" alt="image" src="https://github.com/user-attachments/assets/cd5027d2-8af1-4595-9a42-9705261ae0e1" />
  
+* **Attack Tree**
+  <img width="2720" height="1239" alt="Attack Tree 1 drawio" src="https://github.com/user-attachments/assets/4c7d14ff-15ea-4150-8398-e210fa738cb5" />
+  <img width="2653" height="817" alt="Attack Tree 2 drawio" src="https://github.com/user-attachments/assets/88275c0d-76f3-4566-96f2-1215f03de924" />
+  
 * **System Architecture**
+  <img width="1322" height="733" alt="image" src="https://github.com/user-attachments/assets/ac59baab-7c6d-4a00-b354-0422a16de6c2" />
+
 
 ---
 
