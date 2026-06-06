@@ -468,12 +468,30 @@
 <script>
 // ================== KONFIGURASI ==================
 const API = '../backend/api.php';
-const token = sessionStorage.getItem('token');
 let currentUser = null;
 let selectedPaymentMethod = null;
 let selectedUnit = null;
 let pendingUnitData = null;
 
+// ================== SECURITY HELPER ==================
+function escapeHTML(str) {
+  return String(str ?? '').replace(/[&<>"']/g, s => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  }[s]));
+}
+
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop().split(';').shift();
+  }
+  return '';
+}
 // ================== FUNGSI UTILITY ==================
 function toast(msg, type = 'info') {
   let t = document.querySelector('.toast');
@@ -490,48 +508,59 @@ function toast(msg, type = 'info') {
 function formatRupiah(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
 
 async function apiCall(action, data = {}, method = 'POST') {
-  data.token = token;
-  let headers = { 'Content-Type': 'application/json' };
-  let opts = { method, headers };
-  
+  const csrfToken = getCookie('csrf_token');
+
+  const opts = {
+    method: method,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrfToken
+    }
+  };
+
+  let url = `${API}?action=${action}`;
+
   if (method === 'GET') {
-    // PERBAIKAN: Gunakan '&' karena di URL sudah ada '?action='
-    action += '&' + new URLSearchParams(data);
-    delete opts.body;
+    const params = new URLSearchParams(data).toString();
+    if (params) {
+      url += `&${params}`;
+    }
   } else {
     opts.body = JSON.stringify(data);
   }
-  
+
   try {
-    let res = await fetch(API + '?action=' + action, opts);
-    return res.json();
+    const res = await fetch(url, opts);
+    return await res.json();
   } catch (e) {
-    return { success: false, message: 'Gagal terhubung ke server' };
+    return {
+      success: false,
+      message: 'Gagal terhubung ke server'
+    };
   }
 }
 
 // ================== PROTEKSI HALAMAN ==================
 (async function init() {
-  if (!token) {
-    window.location.href = 'login.html';
-    return;
-  }
   let json = await apiCall('me', {}, 'POST');
+
   if (!json.success || json.user.role !== 'customer') {
-    sessionStorage.removeItem('token');
     window.location.href = 'login.html';
     return;
   }
+
   currentUser = json.user;
   document.getElementById('sidebarUserName').textContent = currentUser.name;
   document.getElementById('welcomeName').textContent = currentUser.name;
   document.getElementById('initialLoading').style.display = 'none';
   document.getElementById('dashboardWrap').style.display = 'flex';
+
   initDashboard();
 })();
 
-document.getElementById('logoutBtn').addEventListener('click', () => {
-  sessionStorage.removeItem('token');
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await apiCall('logout', {}, 'POST');
   window.location.href = 'login.html';
 });
 
@@ -630,7 +659,7 @@ document.getElementById('doSearchBtn').addEventListener('click', async () => {
       <div class="room-card">
         <div class="room-img"><span>${r.emoji || '🛏️'}</span><span class="room-badge">TERSEDIA</span></div>
         <div class="room-body">
-          <h4>${r.type}</h4><p>${r.description}</p>
+          <h4>${escapeHTML(r.type)}</h4><p>${escapeHTML(r.description)}</p>
           <div class="room-price"><strong>${formatRupiah(r.price_per_night)}</strong><span>/ malam × ${nights} malam</span></div>
           <p style="font-size:0.78rem; color:var(--gold); margin-bottom:0.8rem;">Total: ${formatRupiah(r.price_per_night * nights)}</p>
           <button class="btn-book" onclick='openUnitPicker("${r.id}", "${r.type}", "${checkin}", "${checkout}", ${nights}, ${r.price_per_night})'>
