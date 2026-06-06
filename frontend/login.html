@@ -59,7 +59,7 @@
         <div class="field"><i class="fas fa-envelope"></i><input type="email" id="regEmail" placeholder="Email"></div>
         <div class="field"><i class="fas fa-phone"></i><input type="tel" id="regPhone" placeholder="Telepon"></div>
         <div class="field"><i class="fas fa-id-card"></i><input type="text" id="regIdNumber" placeholder="No. KTP"></div>
-        <div class="field"><i class="fas fa-lock"></i><input type="password" id="regPassword" placeholder="Password (min 6 karakter)"></div>
+        <div class="field"><i class="fas fa-lock"></i><input type="password" id="regPassword" placeholder="Password (min 8 karakter)"></div>
         <button class="btn" id="registerSubmitBtn">Daftar</button>
     </div>
 </div>
@@ -75,25 +75,44 @@ function toast(msg,type='info'){
     setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300);},3000);
 }
 
-async function apiCall(action,data={},method='POST'){
-    let headers={'Content-Type':'application/json'};
-    let opts={method,headers,body:JSON.stringify(data)};
-    if(method==='GET'){ delete opts.body; action+='?'+new URLSearchParams(data); }
-    try{
-        let res=await fetch(API+'?action='+action,opts);
-        return res.json();
-    }catch(e){ return {success:false,message:'Gagal terhubung ke server'}; }
+async function apiCall(action, data = {}, method = 'POST') {
+  const opts = {
+    method: method,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
+  let url = `${API}?action=${action}`;
+
+  if (method === 'GET') {
+    const params = new URLSearchParams(data).toString();
+    if (params) {
+      url += `&${params}`;
+    }
+  } else {
+    opts.body = JSON.stringify(data);
+  }
+
+  try {
+    const res = await fetch(url, opts);
+    return await res.json();
+  } catch (e) {
+    return {
+      success: false,
+      message: 'Gagal terhubung ke server'
+    };
+  }
 }
 
 // Cek token lama
 (function(){
-    let token=sessionStorage.getItem('token');
-    if(token){
-        apiCall('me',{token},'POST').then(j=>{
-            if(j.success) window.location.href=j.user.role==='admin'?'admin.html':'customer.html';
-            else sessionStorage.removeItem('token');
-        });
-    }
+    apiCall('me', {}, 'POST').then(j => {
+        if (j.success) {
+            window.location.href = j.user.role === 'admin' ? 'admin.html' : 'customer.html';
+        }
+    });
 })();
 
 document.getElementById('showLoginBtn').onclick=()=>{
@@ -115,7 +134,6 @@ document.getElementById('loginSubmitBtn').onclick=async ()=>{
     if(!email||!pass) return toast('Isi email dan password','error');
     let json=await apiCall('login',{email,password:pass});
     if(!json.success) return toast(json.message,'error');
-    sessionStorage.setItem('token',json.token);
     window.location.href=json.user.role==='admin'?'admin.html':'customer.html';
 };
 
@@ -126,7 +144,7 @@ document.getElementById('registerSubmitBtn').onclick=async ()=>{
     let phone=document.getElementById('regPhone').value.trim();
     let idNum=document.getElementById('regIdNumber').value.trim();
     if(!name||!email||!pass) return toast('Lengkapi data','error');
-    if(pass.length<6) return toast('Password minimal 6 karakter','error');
+    if(pass.length<8) return toast('Password minimal 8 karakter','error');
     let json=await apiCall('register',{name,email,password:pass,phone,id_number:idNum});
     if(!json.success) return toast(json.message,'error');
     toast('Registrasi berhasil! Silakan login.','success');
