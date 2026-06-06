@@ -4,30 +4,90 @@ require_once 'config.php';
 $action = $_REQUEST['action'] ?? '';
 $input  = json_decode(file_get_contents('php://input'), true) ?: $_POST;
 
+validateCsrfToken();
+
 switch ($action) {
     // ================= AUTENTIKASI =================
     case 'login':
         $email = trim($input['email'] ?? '');
         $pass  = $input['password'] ?? '';
+
+        // 1. Validasi input login
+        if (empty($email) || empty($pass)) {
+            echo json_encode(['success' => false, 'message' => 'Email dan password wajib diisi']);
+            break;
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            echo json_encode(['success' => false, 'message' => 'Format email tidak valid']);
+            break;
+        }
+
+        // 2. Rate limiting login
+        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+
+        $checkAttempts = $pdo->prepare("
+            SELECT COUNT(*) 
+            FROM login_attempts 
+            WHERE email = ? 
+            AND ip_address = ? 
+            AND attempted_at > DATE_SUB(NOW(), INTERVAL 10 MINUTE)
+        ");
+        $checkAttempts->execute([$email, $ip]);
+
+        if ($checkAttempts->fetchColumn() >= 5) {
+            http_response_code(429);
+            echo json_encode([
+                'success' => false, 
+                'message' => 'Terlalu banyak percobaan login. Coba lagi nanti.'
+            ]);
+            break;
+        }
+
+        // 3. Cek user berdasarkan email
         $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND deleted_at IS NULL");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
+
+        // 4. Jika password benar, buat token session
         if ($user && password_verify($pass, $user['password'])) {
             $token = bin2hex(random_bytes(32));
-            $pdo->prepare("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))")
-                ->execute([$token, $user['id']]);
-            echo json_encode(['success' => true, 'token' => $token, 'user' => [
-                'id' => $user['id'], 
-                'name' => $user['name'], 
-                'email' => $user['email'], 
-                'role' => $user['role'],
-                'phone' => $user['phone'],           
-                'id_number' => $user['id_number'],   
-                'joined_at' => $user['joined_at']    
-            ]]);
+
+            $pdo->prepare("
+                INSERT INTO sessions (token, user_id, expires_at) 
+                VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))
+            ")->execute([$token, $user['id']]);
+
+            $csrfToken = bin2hex(random_bytes(32));
+
+            setAuthCookie($token);
+            setCsrfCookie($csrfToken);
+
+            echo json_encode([
+                'success' => true,
+                'token' => $token,
+                'user' => [
+                    'id'        => $user['id'],
+                    'name'      => $user['name'],
+                    'email'     => $user['email'],
+                    'role'      => $user['role'],
+                    'phone'     => $user['phone'],
+                    'id_number' => $user['id_number'],
+                    'joined_at' => $user['joined_at']
+                ]
+            ]);
         } else {
+            // 5. Catat percobaan login gagal
+            $pdo->prepare("
+                INSERT INTO login_attempts (email, ip_address) 
+                VALUES (?, ?)
+            ")->execute([$email, $ip]);
+
             http_response_code(401);
-            echo json_encode(['success' => false, 'message' => 'Email atau password salah']);
+            echo json_encode([
+                'success' => false, 
+                'message' => 'Email atau password salah'
+            ]);
         }
         break;
 
@@ -37,31 +97,75 @@ switch ($action) {
         $pass  = $input['password'] ?? '';
         $phone = trim($input['phone'] ?? '');
         $idNum = trim($input['id_number'] ?? '');
+
         if (empty($name) || empty($email) || empty($pass)) {
-            echo json_encode(['success' => false, 'message' => 'Data wajib diisi']); break;
+            echo json_encode(['success' => false, 'message' => 'Nama, email, dan password wajib diisi']);
+            break;
         }
-        $hash = password_hash($pass, PASSWORD_BCRYPT);
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            echo json_encode(['success' => false, 'message' => 'Format email tidak valid']);
+            break;
+        }
+
+        if (strlen($pass) < 8) {
+            echo json_encode(['success' => false, 'message' => 'Password minimal 8 karakter']);
+            break;
+        }
+
+        if (!empty($phone) && !preg_match('/^[0-9+\-\s]{8,20}$/', $phone)) {
+            echo json_encode(['success' => false, 'message' => 'Format nomor telepon tidak valid']);
+            break;
+        }
+
+        if (!empty($idNum) && !preg_match('/^[0-9]{8,30}$/', $idNum)) {
+            echo json_encode(['success' => false, 'message' => 'Nomor identitas tidak valid']);
+            break;
+        }
+
+        $hash = password_hash($pass, PASSWORD_BCRYPT, ['cost' => 12]);
         $id   = 'u_' . bin2hex(random_bytes(8));
+
         try {
             $pdo->prepare("INSERT INTO users (id, name, email, password, phone, id_number) VALUES (?,?,?,?,?,?)")
                 ->execute([$id, $name, $email, $hash, $phone, $idNum]);
+
             echo json_encode(['success' => true, 'message' => 'Registrasi berhasil']);
         } catch (PDOException $e) {
-            echo json_encode(['success' => false, 'message' => $e->getCode() == 23000 ? 'Email sudah terdaftar' : 'Registrasi gagal']);
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getCode() == 23000 ? 'Email sudah terdaftar' : 'Registrasi gagal'
+            ]);
         }
         break;
 
-    case 'me':
-        $user = authenticate($pdo);
-        echo json_encode(['success' => true, 'user' => [
-            'id' => $user['id'], 
-            'name' => $user['name'], 
-            'email' => $user['email'], 
-            'role' => $user['role'],
-            'phone' => $user['phone'],           // Tambahan baru
-            'id_number' => $user['id_number'],   // Tambahan baru
-            'joined_at' => $user['joined_at']    // Tambahan baru
-        ]]);
+        case 'me':
+            $user = authenticate($pdo);
+            echo json_encode(['success' => true, 'user' => [
+                'id' => $user['id'], 
+                'name' => $user['name'], 
+                'email' => $user['email'], 
+                'role' => $user['role'],
+                'phone' => $user['phone'],           // Tambahan baru
+                'id_number' => $user['id_number'],   // Tambahan baru
+                'joined_at' => $user['joined_at']    // Tambahan baru
+            ]]);
+            break;
+    
+    case 'logout':
+        $token = $_COOKIE['auth_token'] ?? '';
+
+        if (!empty($token)) {
+            $stmt = $pdo->prepare("DELETE FROM sessions WHERE token = ?");
+            $stmt->execute([$token]);
+        }
+
+        clearAuthCookies();
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Logout berhasil'
+        ]);
         break;
 
     // ================= KAMAR & UNIT =================
@@ -195,10 +299,44 @@ switch ($action) {
     // ================= BOOKINGS & TRANSACTIONS =================
     case 'create_booking':
         $user = authenticate($pdo);
+
         $unitId   = $input['room_unit_id'] ?? '';
         $checkin  = $input['checkin_date'] ?? '';
         $checkout = $input['checkout_date'] ?? '';
         $guests   = (int)($input['guests'] ?? 1);
+
+        // Validasi input booking
+        if (empty($unitId) || empty($checkin) || empty($checkout)) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Data booking tidak lengkap'
+            ]);
+            break;
+        }
+
+        if (strtotime($checkin) === false || strtotime($checkout) === false) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Format tanggal tidak valid'
+            ]);
+            break;
+        }
+
+        if (strtotime($checkin) >= strtotime($checkout)) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Tanggal checkout harus setelah check-in'
+            ]);
+            break;
+        }
+
+        if ($guests < 1 || $guests > 10) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Jumlah tamu tidak valid'
+            ]);
+            break;
+        }
 
         // Panggil Stored Procedure
         $stmt = $pdo->prepare("CALL sp_create_secure_booking(?, ?, ?, ?, ?, @b_id, @t_price, @status)");
@@ -209,10 +347,16 @@ switch ($action) {
         $res = $pdo->query("SELECT @b_id AS booking_id, @t_price AS total_price, @status AS status")->fetch();
 
         if ($res['status'] === 'SUCCESS') {
-            echo json_encode(['success' => true, 'booking_id' => $res['booking_id'], 'total_price' => $res['total_price']]);
+            echo json_encode([
+                'success' => true,
+                'booking_id' => $res['booking_id'],
+                'total_price' => $res['total_price']
+            ]);
         } else {
-            // Jika Andi telat 1 milidetik dari Budi, ia akan menerima pesan ini:
-            echo json_encode(['success' => false, 'message' => 'Maaf, kamar ini baru saja di-booking oleh tamu lain.']);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Maaf, kamar ini baru saja di-booking oleh tamu lain.'
+            ]);
         }
         break;
 
