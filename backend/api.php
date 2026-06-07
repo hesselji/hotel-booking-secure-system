@@ -4,7 +4,9 @@ require_once 'config.php';
 $action = $_REQUEST['action'] ?? '';
 $input  = json_decode(file_get_contents('php://input'), true) ?: $_POST;
 
-validateCsrfToken();
+if ($action !== 'midtrans_webhook') {
+    validateCsrfToken();
+}
 
 switch ($action) {
     // ================= AUTENTIKASI =================
