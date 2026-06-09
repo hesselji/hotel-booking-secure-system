@@ -38,6 +38,11 @@ switch ($action) {
         $checkAttempts->execute([$email, $ip]);
 
         if ($checkAttempts->fetchColumn() >= 5) {
+            securityLog('WARN', 'RATE_LIMIT_BLOCKED', null, [
+                'email' => $email,
+                'reason' => 'Too many failed login attempts'
+            ]);
+
             http_response_code(429);
             echo json_encode([
                 'success' => false, 
@@ -65,6 +70,11 @@ switch ($action) {
             setAuthCookie($token);
             setCsrfCookie($csrfToken);
 
+            securityLog('INFO', 'LOGIN_SUCCESS', $user['id'], [
+                'email' => $email,
+                'role'  => $user['role']
+            ]);
+
             echo json_encode([
                 'success' => true,
                 'token' => $token,
@@ -84,6 +94,10 @@ switch ($action) {
                 INSERT INTO login_attempts (email, ip_address) 
                 VALUES (?, ?)
             ")->execute([$email, $ip]);
+
+            securityLog('WARN', 'LOGIN_FAILED', null, [
+                'email' => $email
+            ]);
 
             http_response_code(401);
             echo json_encode([
@@ -164,6 +178,10 @@ switch ($action) {
 
         clearAuthCookies();
 
+        securityLog('INFO', 'LOGOUT', null, [
+            'message' => 'User logged out'
+        ]);
+
         echo json_encode([
             'success' => true,
             'message' => 'Logout berhasil'
@@ -186,7 +204,20 @@ switch ($action) {
 
     case 'add_room':
         $user = authenticate($pdo);
-        if ($user['role'] !== 'admin') { echo json_encode(['success'=>false, 'message'=>'Akses ditolak']); break; }
+
+        if ($user['role'] !== 'admin') {
+            securityLog('WARN', 'ACCESS_DENIED', $user['id'], [
+                'action' => $action,
+                'required_role' => 'admin',
+                'user_role' => $user['role']
+            ]);
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Akses ditolak'
+            ]);
+            break;
+        }
         
         $id = 'rm_' . bin2hex(random_bytes(4));
         $type = trim($input['type'] ?? '');
@@ -228,7 +259,20 @@ switch ($action) {
 
     case 'update_room':
         $user = authenticate($pdo);
-        if ($user['role'] !== 'admin') { echo json_encode(['success'=>false]); break; }
+
+        if ($user['role'] !== 'admin') {
+            securityLog('WARN', 'ACCESS_DENIED', $user['id'], [
+                'action' => $action,
+                'required_role' => 'admin',
+                'user_role' => $user['role']
+            ]);
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Akses ditolak'
+            ]);
+            break;
+        }
         
         $id = $input['id'] ?? '';
         $roomNumbers = $input['room_numbers'] ?? '';
@@ -270,7 +314,20 @@ switch ($action) {
 
     case 'delete_room':
         $user = authenticate($pdo);
-        if ($user['role'] !== 'admin') { echo json_encode(['success'=>false]); break; }
+
+        if ($user['role'] !== 'admin') {
+            securityLog('WARN', 'ACCESS_DENIED', $user['id'], [
+                'action' => $action,
+                'required_role' => 'admin',
+                'user_role' => $user['role']
+            ]);
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Akses ditolak'
+            ]);
+            break;
+        }
         try {
             $pdo->prepare("DELETE FROM rooms WHERE id=?")->execute([$input['id']]);
             echo json_encode(['success' => true]);
@@ -349,6 +406,11 @@ switch ($action) {
         $res = $pdo->query("SELECT @b_id AS booking_id, @t_price AS total_price, @status AS status")->fetch();
 
         if ($res['status'] === 'SUCCESS') {
+            securityLog('INFO', 'BOOKING_CREATED', $user['id'], [
+                'booking_id' => $res['booking_id'],
+                'room_unit_id' => $unitId
+            ]);
+            
             echo json_encode([
                 'success' => true,
                 'booking_id' => $res['booking_id'],
@@ -431,7 +493,20 @@ switch ($action) {
     // ================= DASHBOARD ADMIN =================
     case 'get_stats':
         $user = authenticate($pdo);
-        if ($user['role'] !== 'admin') { echo json_encode(['success' => false]); break; }
+
+        if ($user['role'] !== 'admin') {
+            securityLog('WARN', 'ACCESS_DENIED', $user['id'], [
+                'action' => $action,
+                'required_role' => 'admin',
+                'user_role' => $user['role']
+            ]);
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Akses ditolak'
+            ]);
+            break;
+        }
         $totalBookings = $pdo->query("SELECT COUNT(*) FROM bookings")->fetchColumn();
         // Menggunakan UPPER agar aman dari perbedaan huruf besar/kecil
         $totalRevenue = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE UPPER(status) = 'SUCCESS'")->fetchColumn();
@@ -444,7 +519,20 @@ switch ($action) {
 
     case 'get_transactions':
         $user = authenticate($pdo);
-        if ($user['role'] !== 'admin') { echo json_encode(['success' => false]); break; }
+
+        if ($user['role'] !== 'admin') {
+            securityLog('WARN', 'ACCESS_DENIED', $user['id'], [
+                'action' => $action,
+                'required_role' => 'admin',
+                'user_role' => $user['role']
+            ]);
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Akses ditolak'
+            ]);
+            break;
+        }
         
         $stmt = $pdo->query("
             SELECT t.*, u.name as customer_name, u.email as customer_email 
@@ -459,7 +547,20 @@ switch ($action) {
 
     case 'get_customers':
         $user = authenticate($pdo);
-        if ($user['role'] !== 'admin') { echo json_encode(['success' => false]); break; }
+
+        if ($user['role'] !== 'admin') {
+            securityLog('WARN', 'ACCESS_DENIED', $user['id'], [
+                'action' => $action,
+                'required_role' => 'admin',
+                'user_role' => $user['role']
+            ]);
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Akses ditolak'
+            ]);
+            break;
+        }
         $stmt = $pdo->query("SELECT id, name, email, phone, id_number, joined_at 
                          FROM users 
                          WHERE role = 'customer' AND deleted_at IS NULL 

@@ -42,6 +42,38 @@ try {
     exit;
 }
 
+/* ================= SECURITY LOGGING ================= */
+function securityLog($level, $event, $userId = null, $details = []) {
+    $logDir = __DIR__ . '/../logs';
+
+    if (!is_dir($logDir)) {
+        mkdir($logDir, 0777, true);
+    }
+
+    // Jangan pernah log password, token, csrf token, atau nomor identitas
+    unset($details['password']);
+    unset($details['token']);
+    unset($details['auth_token']);
+    unset($details['csrf_token']);
+    unset($details['id_number']);
+
+    $logData = [
+        'timestamp'  => date('c'),
+        'level'      => $level,
+        'event'      => $event,
+        'user_id'    => $userId,
+        'ip'         => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+        'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
+        'details'    => $details
+    ];
+
+    file_put_contents(
+        $logDir . '/security.log',
+        json_encode($logData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL,
+        FILE_APPEND
+    );
+}
+
 /* ================= COOKIE & CSRF HELPER ================= */
 function isSecureRequest() {
     return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
@@ -104,6 +136,10 @@ function validateCsrfToken() {
     $csrfHeader = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
 
     if (empty($csrfCookie) || empty($csrfHeader) || !hash_equals($csrfCookie, $csrfHeader)) {
+        securityLog('WARN', 'CSRF_INVALID', null, [
+            'action' => $action
+        ]);
+
         http_response_code(403);
         echo json_encode([
             'success' => false,

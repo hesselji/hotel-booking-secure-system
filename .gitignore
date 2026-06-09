@@ -199,3 +199,6 @@ Desktop.ini
 # File backup
 *.bak
 *.orig
+
+# Security logs
+logs/
