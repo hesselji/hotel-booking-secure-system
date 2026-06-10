@@ -1,36 +1,201 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Instrumented libs
+lib-cov
+
+# Coverage
+coverage
+*.lcov
+.nyc_output
+
+# Grunt intermediate storage
+.grunt
+
+# Bower dependency directory
+bower_components
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons
+build/Release
+
+# Dependency directories
+node_modules/
+jspm_packages/
+web_modules/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache
+.npm
+
+# ESLint cache
+.eslintcache
+
+# Stylelint cache
+.stylelintcache
+
+# REPL history
+.node_repl_history
+
+# npm pack output
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Dotenv environment variables
 .env
 .env.*
 !.env.example
+!.env.local.example
 
-node_modules/
-dist/
-build/
+# Parcel cache
+.cache
+.parcel-cache
 
-vendor/
-composer.lock
+# Next.js build output
+.next
+out
 
-*.sql
-*.bak
-*.backup
-*.zip
-*.rar
+# Nuxt.js build
+.nuxt
+dist
 
-*.log
-logs/
-storage/logs/
-
-uploads/
-
-.DS_Store
-Thumbs.db
-
-.vscode/
-.idea/
-
+# Gatsby files
 .cache/
-tmp/
+# public (jika tidak menggunakan Next.js, hapus komentar baris di bawah)
+# public
 
-config.php
-database.php
-bootstrap/cache/
-storage/framework/
+# Vuepress
+.vuepress/dist
+.temp
+.cache
+
+# Sveltekit
+.svelte-kit/
+
+# Vitepress
+**/.vitepress/dist
+**/.vitepress/cache
+
+# Docusaurus
+.docusaurus
+
+# Serverless
+.serverless/
+
+# FuseBox
+.fusebox/
+
+# DynamoDB Local
+.dynamodb/
+
+# Firebase cache
+.firebase/
+
+# TernJS port
+.tern-port
+
+# VSCode test
+.vscode-test
+
+# Yarn v3
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Vite logs
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# ========== TAMBAHAN UNTUK KEMUDAHAN DEVELOPER ==========
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Editor directories dan files
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*.swo
+*~
+
+# Temp files
+*.tmp
+*.temp
+*.cache
+
+# Paket manager lock file (opsional, biarkan jika ingin commit lockfile)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Build artifacts (selain dist yang sudah di atas)
+/build
+/builds
+/dist
+/output
+
+# Environment local dengan credential
+.env.local
+.env.*.local
+
+# File hasil compile TypeScript (jika Anda transpile ke JS di folder `dist` atau `build`)
+# *.js (jangan di-uncomment karena akan mengabaikan SEMUA file .js!)
+# *.js.map (jika ingin abaikan sourcemap, uncomment)
+# *.d.ts (untuk TypeScript)
+
+# IntelliJ / WebStorm
+.idea/modules.xml
+.idea/workspace.xml
+*.iml
+
+# Vim
+*.un~
+ Session.vim
+ .netrwhist
+
+# PID file untuk server
+*.pid
+
+# File backup
+*.bak
+*.orig

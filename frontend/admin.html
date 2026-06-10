@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LuxeBooking · Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* =========================================
+       CSS TEMA LUXEBOOKING (SAMA DENGAN CUSTOMER)
+       ========================================= */
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --gold-dim: rgba(201,168,76,0.15);
+      --onyx: #0a0b0f;
+      --onyx-2: #111318;
+      --onyx-3: #181b22;
+      --glass: rgba(255,255,255,0.04);
+      --glass-border: rgba(201,168,76,0.2);
+      --text-primary: #f0ead8;
+      --text-muted: #8a8a9a;
+      --green: #4caf82;
+      --red: #e05c5c;
+      --amber: #e0a84c;
+      --radius: 16px;
+      --font-display: 'Cormorant Garamond', serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: var(--font-body); background: var(--onyx); color: var(--text-primary); min-height: 100vh; overflow: hidden; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 80% 60% at 20% -10%, rgba(201,168,76,0.08) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 110%, rgba(201,168,76,0.05) 0%, transparent 60%); pointer-events: none; z-index: 0; }
+
+    /* Layout */
+    .dashboard-wrap { display: flex; height: 100vh; position: relative; z-index: 1; }
+
+    /* Sidebar */
+    .sidebar { width: 270px; background: var(--onyx-2); border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; padding: 2rem 1rem; flex-shrink: 0; }
+    .sidebar-brand { display: flex; align-items: center; gap: 0.8rem; padding: 0 0.5rem; margin-bottom: 2rem; }
+    .sidebar-brand .icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold), #b8923e); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--onyx); font-size: 1rem; }
+    .sidebar-brand h2 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; color: var(--text-primary); }
+    .sidebar-brand small { font-size: 0.65rem; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; font-weight: 700;}
+
+    .sidebar-user { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 0.9rem 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.8rem; }
+    .user-avatar { width: 36px; height: 36px; background: linear-gradient(135deg, var(--gold-dim), rgba(201,168,76,0.3)); border: 1px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: var(--gold); }
+    .user-info strong { font-size: 0.85rem; font-weight: 600; display: block; }
+    .user-info span { font-size: 0.72rem; color: var(--gold); letter-spacing: 1px; }
+
+    .sidebar-section-label { font-size: 0.65rem; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); padding: 0 0.5rem; margin: 1rem 0 0.5rem; }
+    .nav-btn { display: flex; align-items: center; gap: 0.8rem; width: 100%; padding: 0.75rem 1rem; background: transparent; border: none; border-radius: 12px; color: var(--text-muted); font-family: var(--font-body); font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: all 0.2s; text-align: left; }
+    .nav-btn i { width: 18px; font-size: 0.9rem; }
+    .nav-btn:hover:not(.active):not(#logoutBtn) { background: var(--glass); color: var(--text-primary); }
+    .nav-btn.active { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(201,168,76,0.25); }
+    #logoutBtn { margin-top: auto; color: var(--red); border-top: 1px solid rgba(255,255,255,0.06); margin-top: 1rem; padding-top: 1rem; }
+
+    /* Main Content */
+    .main-content { flex: 1; overflow-y: auto; padding: 2rem 2.5rem; }
+    .main-content::-webkit-scrollbar { width: 5px; }
+    .main-content::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+    .tab-pane { display: none; animation: fadeUp 0.35s ease; }
+    .tab-pane.active { display: block; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+    /* Headers & Stats */
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .page-header h2 { font-family: var(--font-display); font-size: 2rem; font-weight: 600; }
+    .page-header p { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.2rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--onyx-3); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 1.5rem; position: relative; overflow: hidden; transition: all 0.25s; }
+    .stat-card:hover { border-color: var(--gold); transform: translateY(-3px); }
+    .stat-icon { width: 38px; height: 38px; background: var(--gold-dim); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 1rem; margin-bottom: 1rem; }
+    .stat-card h3 { font-family: var(--font-display); font-size: 2rem; font-weight: 700; line-height: 1; }
+    .stat-card p { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; text-transform: uppercase; letter-spacing: 1px;}
+
+    /* Tables */
+    .table-wrap { background: var(--onyx-3); border: 1px solid var(--glass-border); border-radius: var(--radius); overflow-x: auto; margin-bottom: 2rem; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+    th { background: var(--onyx-2); padding: 1rem; text-align: left; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); font-weight: 500; }
+    td { padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(201,168,76,0.04); }
+
+    .badge-paid, .badge-active { background: rgba(76,175,130,0.15); color: var(--green); padding: 0.2rem 0.7rem; border-radius: 20px; font-size: 0.72rem; font-weight: 600; border: 1px solid rgba(76,175,130,0.3); }
+    .badge-pending { background: rgba(224,168,76,0.15); color: var(--amber); padding: 0.2rem 0.7rem; border-radius: 20px; font-size: 0.72rem; font-weight: 600; border: 1px solid rgba(224,168,76,0.3); }
+    .badge-inactive, .badge-cancelled { background: rgba(224,92,92,0.15); color: var(--red); padding: 0.2rem 0.7rem; border-radius: 20px; font-size: 0.72rem; font-weight: 600; border: 1px solid rgba(224,92,92,0.3); }
+    
+    .btn-gold { background: linear-gradient(135deg, var(--gold), #b8923e); border: none; border-radius: 10px; padding: 0.6rem 1.2rem; color: var(--onyx); font-family: var(--font-body); font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .btn-gold:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(201,168,76,0.3); }
+    
+    .action-btn { background: var(--onyx-2); border: 1px solid var(--glass-border); color: var(--text-muted); padding: 0.4rem 0.6rem; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    .action-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .action-btn.delete:hover { border-color: var(--red); color: var(--red); }
+
+    /* Modals */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 500; display: none; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { width: 500px; max-width: 95vw; background: var(--onyx-3); border: 1px solid var(--glass-border); border-radius: 20px; padding: 2rem; max-height: 90vh; overflow-y: auto; }
+    .modal h3 { font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--gold); }
+    
+    .form-group { margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group label { font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); }
+    .form-group input, .form-group select, .form-group textarea { background: var(--onyx-2); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 0.75rem 1rem; color: var(--text-primary); font-family: var(--font-body); outline: none; transition: 0.2s; width: 100%; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--gold); }
+    
+    .modal-actions { display: flex; gap: 0.8rem; margin-top: 1.5rem; }
+    .btn-cancel { flex: 1; background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+    .btn-cancel:hover { border-color: var(--red); color: var(--red); }
+    
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--onyx-3); border-left: 3px solid var(--gold); padding: 0.9rem 1.5rem; border-radius: 50px; color: var(--text-primary); font-size: 0.85rem; z-index: 2000; box-shadow: 0 8px 24px rgba(0,0,0,0.5); opacity: 0; transition: all 0.3s ease; white-space: nowrap; display: flex; align-items: center; gap: 0.7rem; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.error { border-left-color: var(--red); }
+    .toast.success { border-left-color: var(--green); }
+  </style>
+</head>
+<body>
+
+<div class="dashboard-wrap">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="icon"><i class="fas fa-crown"></i></div>
+      <div>
+        <h2>LuxeBooking</h2>
+        <small>Control Panel</small>
+      </div>
+    </div>
+    
+    <div class="sidebar-user">
+      <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
+      <div class="user-info">
+        <strong id="adminName">Admin</strong>
+        <span>ADMINISTRATOR</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section-label">Manajemen</div>
+    <nav>
+      <button class="nav-btn active" data-tab="dashboard"><i class="fas fa-chart-pie"></i> <span>Dashboard</span></button>
+      <button class="nav-btn" data-tab="bookings"><i class="fas fa-ticket-alt"></i> <span>Kelola Booking</span></button>
+      <button class="nav-btn" data-tab="rooms"><i class="fas fa-door-open"></i> <span>Kelola Kamar</span></button>
+      <button class="nav-btn" data-tab="customers"><i class="fas fa-users"></i> <span>Data Pelanggan</span></button>
+    </nav>
+    <button class="nav-btn" id="logoutBtn"><i class="fas fa-right-from-bracket"></i> <span>Keluar</span></button>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    
+    <!-- === DASHBOARD TAB === -->
+    <div class="tab-pane active" id="tab-dashboard">
+      <div class="page-header">
+        <div>
+          <h2>Ringkasan Sistem</h2>
+          <p>Pantau performa dan statistik hotel secara real-time</p>
+        </div>
+      </div>
+      <div class="stats-grid" id="adminStats">
+        <!-- Stats will be loaded here -->
+      </div>
+      
+      <h3 style="margin-bottom:1rem; font-family:var(--font-display); color:var(--gold);">Transaksi Sukses Terakhir</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID Transaksi</th>
+              <th>Customer</th>
+              <th>Jumlah</th>
+              <th>Metode</th>
+              <th>Tanggal</th>
+            </tr>
+          </thead>
+          <tbody id="recentTrxBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- === BOOKINGS TAB === -->
+    <div class="tab-pane" id="tab-bookings">
+      <div class="page-header">
+        <div>
+          <h2>Data Reservasi</h2>
+          <p>Seluruh riwayat reservasi dan transaksi tamu hotel</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID Booking</th>
+              <th>Customer</th>
+              <th>Kamar</th>
+              <th>Tanggal Check-in</th>
+              <th>Total Biaya</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="adminBookingsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- === ROOMS TAB === -->
+    <div class="tab-pane" id="tab-rooms">
+      <div class="page-header">
+        <div>
+          <h2>Inventori Kamar</h2>
+          <p>Kelola tipe, harga, deskripsi, dan ketersediaan stok kamar</p>
+        </div>
+        <button class="btn-gold" id="openAddRoomBtn"><i class="fas fa-plus"></i> Tambah Kamar</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tipe Kamar</th>
+              <th>Harga/Malam</th>
+              <th>Stok</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="adminRoomsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- === CUSTOMERS TAB === -->
+    <div class="tab-pane" id="tab-customers">
+      <div class="page-header">
+        <div>
+          <h2>Data Pelanggan</h2>
+          <p>Daftar akun pelanggan hotel yang telah terdaftar</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nama Lengkap</th>
+              <th>Email</th>
+              <th>No. HP</th>
+              <th>Identitas (KTP)</th>
+              <th>Bergabung</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="adminCustomersBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ========== ROOM MODAL (ADD/EDIT) ========== -->
+<div class="modal-overlay" id="roomModal">
+  <div class="modal">
+    <h3 id="roomModalTitle"><i class="fas fa-bed"></i> Tambah Kamar Baru</h3>
+    <input type="hidden" id="roomIdInput">
+    
+    <div class="form-group">
+      <label>Tipe Kamar (Misal: Deluxe Room)</label>
+      <input type="text" id="roomType" required>
+    </div>
+    
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+      <div class="form-group">
+        <label>Harga per Malam (Rp)</label>
+        <input type="number" id="roomPrice" required>
+      </div>
+      <div class="form-group">
+        <label>Nomor Kamar (Pisahkan dgn koma)</label>
+        <input type="text" id="roomNumbers" placeholder="Contoh: 101, 102, 103" required>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+      <div class="form-group">
+        <label>Emoji Icon</label>
+        <input type="text" id="roomEmoji" placeholder="🛏️" maxlength="5">
+      </div>
+      <div class="form-group">
+        <label>Status Aktif</label>
+        <select id="roomActive">
+          <option value="1">Aktif (Tersedia)</option>
+          <option value="0">Tidak Aktif</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Deskripsi Singkat</label>
+      <textarea id="roomDesc" rows="3" required></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="closeRoomModal">Batal</button>
+      <button class="btn-gold" id="saveRoomBtn" style="flex:2;">Simpan Data Kamar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== CUSTOMER MODAL (EDIT) ========== -->
+<div class="modal-overlay" id="customerModal">
+  <div class="modal">
+    <h3 id="customerModalTitle"><i class="fas fa-user-edit"></i> Edit Pelanggan</h3>
+    <input type="hidden" id="customerIdInput">
+    
+    <div class="form-group">
+      <label>Nama Lengkap</label>
+      <input type="text" id="customerName" required>
+    </div>
+    
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+      <div class="form-group">
+        <label>No. WhatsApp / HP</label>
+        <input type="text" id="customerPhone" placeholder="08...">
+      </div>
+      <div class="form-group">
+        <label>No. Identitas (KTP/Paspor)</label>
+        <input type="text" id="customerIdNumber">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="closeCustomerModal">Batal</button>
+      <button class="btn-gold" id="saveCustomerBtn" style="flex:2;">Simpan Perubahan</button>
+    </div>
+  </div>
+</div>
+<script>
+// ================== KONFIGURASI ==================
+const API = '../backend/api.php';
+let currentAdmin = null;
+
+// ================== SECURITY HELPER ==================
+function escapeHTML(str) {
+  return String(str ?? '').replace(/[&<>"']/g, s => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  }[s]));
+}
+
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop().split(';').shift();
+  }
+  return '';
+}
+
+// ================== FUNGSI UTILITY ==================
+function toast(msg, type = 'info') {
+  let t = document.querySelector('.toast');
+  if (t) t.remove();
+  t = document.createElement('div');
+  t.className = `toast ${type}`;
+  const icons = { success: 'fa-check-circle', error: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+  t.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i> ${msg}`;
+  document.body.appendChild(t);
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+function formatRupiah(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
+
+async function apiCall(action, data = {}, method = 'POST') {
+  const csrfToken = getCookie('csrf_token');
+
+  const opts = {
+    method: method,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrfToken
+    }
+  };
+
+  let url = `${API}?action=${action}`;
+
+  if (method === 'GET') {
+    const params = new URLSearchParams(data).toString();
+    if (params) {
+      url += `&${params}`;
+    }
+  } else {
+    opts.body = JSON.stringify(data);
+  }
+
+  try {
+    const res = await fetch(url, opts);
+    return await res.json();
+  } catch (e) {
+    return {
+      success: false,
+      message: 'Gagal terhubung ke server'
+    };
+  }
+}
+
+// ================== PROTEKSI HALAMAN ==================
+(async function init() {
+  let json = await apiCall('me', {}, 'POST');
+
+  if (!json.success || json.user.role !== 'admin') {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  currentAdmin = json.user;
+  document.getElementById('adminName').textContent = currentAdmin.name;
+
+  initAdminPanel();
+})();
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await apiCall('logout', {}, 'POST');
+  window.location.href = 'login.html';
+});
+
+// ================== NAVIGASI TABS ==================
+document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-btn[data-tab]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + btn.getAttribute('data-tab')).classList.add('active');
+    
+    initAdminPanel();
+  });
+});
+
+ function initAdminPanel() {
+  const activeTab = document.querySelector('.nav-btn.active').getAttribute('data-tab');
+  if(activeTab === 'dashboard') loadDashboardStats();
+  if(activeTab === 'bookings') loadBookingsTable();
+  if(activeTab === 'rooms') loadRoomsTable();
+  if(activeTab === 'customers') loadCustomersTable();
+}
+
+// ─── 1. DASHBOARD TAB ───
+async function loadDashboardStats() {
+  try {
+    let statsJson = await apiCall('get_stats', {}, 'GET');
+    let trxsJson = await apiCall('get_transactions', {}, 'GET');
+
+    // Load Kotak Statistik
+    if(statsJson && statsJson.success) {
+      const s = statsJson.data;
+      document.getElementById('adminStats').innerHTML = `
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-wallet"></i></div>
+          <h3>${formatRupiah(s.totalRevenue || 0)}</h3><p>Total Pendapatan</p></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-ticket"></i></div>
+          <h3>${s.totalBookings || 0}</h3><p>Total Reservasi</p></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-bed"></i></div>
+          <h3>${s.totalUnits || 0}</h3><p>Total Unit Kamar</p></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div>
+          <h3>${s.totalCustomers || 0}</h3><p>Pelanggan Aktif</p></div>
+      `;
+    }
+
+    // Load Tabel Transaksi Terakhir
+    const tbody = document.getElementById('recentTrxBody');
+    if(trxsJson && trxsJson.success && Array.isArray(trxsJson.data) && trxsJson.data.length > 0) {
+      tbody.innerHTML = trxsJson.data.map(t => {
+        
+        let methodName = t.method ? String(t.method).toUpperCase() : 'MANUAL';
+        let custName = t.customer_name ? t.customer_name : 'Customer';
+        
+        // Tetap tampilkan ID Midtrans jika ada, kalau tidak ada pakai ID TRX biasa
+        let displayId = t.midtrans_id ? String(t.midtrans_id).substring(0,12) + '...' : t.id;
+
+        // --- TRIK EXTRACT TANGGAL DARI "TRX" ---
+        let txDate = '-';
+        // PASTI ambil dari t.id (karena id utamanya selalu berawalan TRX)
+        if (t.id && t.id.startsWith('TRX')) {
+            let timestamp = parseInt(t.id.replace('TRX', '')); 
+            if (!isNaN(timestamp)) {
+                let dateObj = new Date(timestamp * 1000); 
+                txDate = dateObj.toLocaleString('id-ID', { 
+                    day: '2-digit', month: 'short', year: 'numeric', 
+                    hour: '2-digit', minute: '2-digit' 
+                });
+            }
+        } 
+        // Jika suatu saat ada kolom created_at, gunakan itu
+        else if (t.created_at) {
+            txDate = t.created_at; 
+        }
+
+        return `
+          <tr>
+            <td style="font-family:monospace; color:var(--gold);" title="${t.midtrans_id || t.id}">${displayId}</td>
+            <td><strong>${custName}</strong><br><small style="color:var(--text-muted)">${t.customer_email}</small></td>
+            <td style="font-weight:bold; color:var(--gold);">${formatRupiah(t.amount || 0)}</td>
+            <td><span class="badge-active" style="font-size:0.65rem;">${methodName}</span></td>
+            <td style="font-size:0.8rem; color:var(--text-muted);">${txDate}</td>
+          </tr>
+        `;
+      }).join('');
+    } else {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:2rem;">Belum ada transaksi sukses yang tercatat.</td></tr>';
+    }
+  } catch (error) {
+    console.error("Dashboard error macet di:", error);
+  }
+}
+
+// ─── 2. BOOKINGS TAB ───
+async function loadBookingsTable() {
+  let json = await apiCall('get_bookings', {}, 'GET');
+  const tbody = document.getElementById('adminBookingsBody');
+  
+  if(!json.success || json.data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Belum ada data booking</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = json.data.map(b => `
+    <tr>
+      <td style="font-family:monospace;">${b.id}</td>
+      <td><strong>${escapeHTML(b.customer_name || '-')}</strong><br><small style="color:var(--text-muted)">${b.customer_email}</small></td>
+      <td>${b.room_type} No.${b.room_number}</td>
+      <td>${b.checkin_date}</td>
+      <td style="color:var(--gold); font-weight:600;">${formatRupiah(b.total_price)}</td>
+      <td>
+        ${b.payment_status === 'paid' ? '<span class="badge-paid">Paid</span>' : 
+          b.payment_status === 'cancelled' ? '<span class="badge-cancelled">Cancelled</span>' : 
+          '<span class="badge-pending">Pending</span>'}
+      </td>
+      <td>
+        ${b.payment_status === 'pending' ? `
+          <button class="action-btn delete" onclick="deleteBooking('${b.id}')" title="Hapus Booking (Tolak)"><i class="fas fa-trash"></i></button>
+        ` : `
+          <span style="font-size:0.75rem; color:var(--text-muted);"><i class="fas fa-lock"></i> Permanen</span>
+        `}
+      </td>
+    </tr>
+  `).join('');
+}
+
+window.deleteBooking = async (id) => {
+  if(!confirm('Hapus data booking ini secara permanen?')) return;
+  let json = await apiCall('delete_booking', { booking_id: id });
+  if(json.success) {
+    toast('Booking dihapus', 'info');
+    loadBookingsTable();
+  } else {
+    toast('Gagal menghapus booking', 'error');
+  }
+};
+
+// ─── 3. ROOMS TAB ───
+async function loadRoomsTable() {
+  let json = await apiCall('get_rooms', {}, 'GET');
+  const tbody = document.getElementById('adminRoomsBody');
+  
+  if(!json.success || json.data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Belum ada data kamar</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = json.data.map(r => `
+    <tr>
+      <td style="font-family:monospace; color:var(--text-muted);">${r.id.substring(0,8)}...</td>
+      <td><strong>${r.emoji || '🛏️'} ${r.type}</strong></td>
+      <td style="color:var(--gold);">${formatRupiah(r.price_per_night)}</td>
+      <td>${r.total_units} Kamar</td>
+      <td>${(r.is_active == 1) ? '<span class="badge-active">Aktif</span>' : '<span class="badge-inactive">Non-Aktif</span>'}</td>
+      <td>
+        <button class="action-btn" onclick='editRoom(${JSON.stringify(r)})' title="Edit Kamar"><i class="fas fa-edit"></i></button>
+        <button class="action-btn delete" onclick='deleteRoom("${r.id}")' title="Hapus Kamar"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+const roomModal = document.getElementById('roomModal');
+
+document.getElementById('openAddRoomBtn').addEventListener('click', () => {
+  document.getElementById('roomIdInput').value = '';
+  document.getElementById('roomType').value = '';
+  document.getElementById('roomPrice').value = '';
+  document.getElementById('roomNumbers').value = ''; 
+  document.getElementById('roomEmoji').value = '🛏️';
+  document.getElementById('roomDesc').value = '';
+  document.getElementById('roomActive').value = '1';
+  document.getElementById('roomModalTitle').innerHTML = '<i class="fas fa-bed"></i> Tambah Kamar Baru';
+  roomModal.classList.add('open');
+});
+
+document.getElementById('closeRoomModal').addEventListener('click', () => {
+  roomModal.classList.remove('open');
+});
+
+window.editRoom = (room) => {
+  document.getElementById('roomIdInput').value = room.id;
+  document.getElementById('roomType').value = room.type;
+  document.getElementById('roomPrice').value = room.price_per_night;
+  document.getElementById('roomNumbers').value = room.room_numbers || ''; 
+  document.getElementById('roomEmoji').value = room.emoji || '';
+  document.getElementById('roomDesc').value = room.description || '';
+  document.getElementById('roomActive').value = room.is_active;
+  document.getElementById('roomModalTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Kamar';
+  roomModal.classList.add('open');
+};
+
+document.getElementById('saveRoomBtn').addEventListener('click', async () => {
+  const id = document.getElementById('roomIdInput').value;
+  const payload = {
+    type: document.getElementById('roomType').value.trim(),
+    price_per_night: document.getElementById('roomPrice').value,
+    emoji: document.getElementById('roomEmoji').value,
+    description: document.getElementById('roomDesc').value,
+    is_active: document.getElementById('roomActive').value,
+    room_numbers: document.getElementById('roomNumbers').value.trim() 
+  };
+
+  if(!payload.type || !payload.price_per_night || !payload.room_numbers) {
+      return toast('Lengkapi data wajib & nomor kamar!', 'error');
+  }
+
+  if (id) {
+    payload.id = id;
+    let res = await apiCall('update_room', payload);
+    if(res.success) {
+        toast('Kamar diperbarui', 'success');
+        roomModal.classList.remove('open');
+        loadRoomsTable();
+    } else {
+        toast(res.message, 'error'); // Tampilkan pesan error nomor kembar dari PHP
+    }
+  } else {
+    let res = await apiCall('add_room', payload);
+    if(res.success) {
+        toast('Kamar ditambahkan', 'success');
+        roomModal.classList.remove('open');
+        loadRoomsTable();
+    } else {
+        toast(res.message, 'error'); // Tampilkan pesan error nomor kembar dari PHP
+    }
+  }
+});
+
+window.deleteRoom = async (id) => {
+  if(!confirm('Yakin hapus tipe kamar ini?')) return;
+  let json = await apiCall('delete_room', { id });
+  if(json.success) {
+    toast('Kamar dihapus', 'info');
+    loadRoomsTable();
+  } else {
+    toast(json.message, 'error');
+  }
+};
+
+// ─── 4. CUSTOMERS TAB ───
+async function loadCustomersTable() {
+  let json = await apiCall('get_customers', {}, 'GET');
+  const tbody = document.getElementById('adminCustomersBody');
+  
+  if(!json.success || json.data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Belum ada data pelanggan</td></tr>';
+    return;
+  }
+
+  // Tampilkan data beserta tombol aksi Edit & Delete
+  tbody.innerHTML = json.data.map(c => `
+    <tr>
+      <td><strong>${c.name}</strong></td>
+      <td>${c.email}</td>
+      <td>${c.phone || '-'}</td>
+      <td>${c.id_number || '-'}</td>
+      <td>${c.joined_at}</td>
+      <td>
+        <button class="action-btn" onclick='editCustomer(${JSON.stringify(c)})' title="Edit Pelanggan"><i class="fas fa-edit"></i></button>
+        <button class="action-btn delete" onclick='deleteCustomer("${c.id}")' title="Hapus Pelanggan"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// Fitur Modal Edit
+const customerModal = document.getElementById('customerModal');
+
+window.editCustomer = (customer) => {
+  document.getElementById('customerIdInput').value = customer.id;
+  document.getElementById('customerName').value = customer.name;
+  document.getElementById('customerPhone').value = customer.phone || '';
+  document.getElementById('customerIdNumber').value = customer.id_number || '';
+  customerModal.classList.add('open');
+};
+
+document.getElementById('closeCustomerModal').addEventListener('click', () => {
+  customerModal.classList.remove('open');
+});
+
+// Fitur Simpan Edit
+document.getElementById('saveCustomerBtn').addEventListener('click', async () => {
+  const payload = {
+    customer_id: document.getElementById('customerIdInput').value,
+    name: document.getElementById('customerName').value.trim(),
+    phone: document.getElementById('customerPhone').value.trim(),
+    id_number: document.getElementById('customerIdNumber').value.trim()
+  };
+
+  if(!payload.name) return toast('Nama pelanggan tidak boleh kosong!', 'error');
+
+  let res = await apiCall('edit_customer', payload);
+  if(res.success) {
+    toast('Data pelanggan berhasil diperbarui', 'success');
+    customerModal.classList.remove('open');
+    loadCustomersTable(); // Refresh tabel
+  } else {
+    toast(res.message || 'Gagal memperbarui data', 'error');
+  }
+});
+
+// Fitur Hapus (Soft Delete)
+window.deleteCustomer = async (id) => {
+  if(!confirm('Yakin ingin menghapus pelanggan ini? (Data transaksi mereka akan tetap aman di laporan keuangan)')) return;
+  
+  let json = await apiCall('delete_customer', { customer_id: id });
+  if(json.success) {
+    toast('Pelanggan dinonaktifkan', 'info');
+    loadCustomersTable(); // Refresh tabel
+  } else {
+    toast(json.message || 'Gagal menghapus pelanggan', 'error');
+  }
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>LuxeBooking · Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root{--gold:#c9a84c;--onyx:#0a0b0f;--onyx2:#111318;--onyx3:#181b22;--text:#f0ead8;--muted:#8a8a9a;--red:#e05c5c;--green:#4caf82}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'DM Sans',sans-serif;background:var(--onyx);color:var(--text);display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden}
+        body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 20% -10%,rgba(201,168,76,0.08) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 110%,rgba(201,168,76,0.05) 0%,transparent 60%);z-index:0}
+        .card{position:relative;width:420px;max-width:94vw;background:var(--onyx3);border:1px solid rgba(201,168,76,0.2);border-radius:24px;padding:2.5rem 2rem;z-index:1;box-shadow:0 40px 80px rgba(0,0,0,0.7);animation:fadeIn 0.6s ease}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+        .logo{text-align:center;margin-bottom:2rem}
+        .logo i{font-size:2rem;color:var(--gold)}
+        .logo h1{font-family:'Cormorant Garamond',serif;font-size:2rem;margin-top:0.5rem}
+        .logo p{color:var(--muted);font-size:0.8rem;letter-spacing:2px}
+        .tabs{display:flex;background:var(--onyx2);border-radius:12px;padding:4px;margin-bottom:1.5rem}
+        .tabs button{flex:1;padding:0.6rem;background:none;border:none;border-radius:9px;color:var(--muted);font-weight:500;cursor:pointer;transition:0.2s}
+        .tabs button.active{background:linear-gradient(135deg,var(--gold),#b8923e);color:var(--onyx);font-weight:600}
+        .field{position:relative;margin-bottom:1rem}
+        .field i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--muted)}
+        .field input{width:100%;background:var(--onyx2);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:0.75rem 1rem 0.75rem 2.5rem;color:var(--text);font-size:0.9rem;outline:none}
+        .field input:focus{border-color:var(--gold)}
+        .btn{width:100%;padding:0.85rem;background:linear-gradient(135deg,var(--gold),#b8923e);border:none;border-radius:12px;color:var(--onyx);font-weight:700;cursor:pointer;margin-top:0.5rem}
+        .hint{margin-top:1rem;text-align:center;font-size:0.75rem;color:var(--muted);background:rgba(201,168,76,0.1);padding:0.7rem;border-radius:10px}
+        .hint span{color:var(--gold);font-weight:600}
+        .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--onyx3);border-left:3px solid var(--gold);padding:1rem 2rem;border-radius:50px;z-index:2000;opacity:0;transition:0.3s;display:flex;align-items:center;gap:0.5rem}
+        .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+        .toast.error{border-left-color:var(--red)}
+        .toast.success{border-left-color:var(--green)}
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="logo">
+        <i class="fas fa-gem"></i>
+        <h1>LuxeBooking</h1>
+        <p>Authentication</p>
+    </div>
+    <div class="tabs">
+        <button id="showLoginBtn" class="active">Masuk</button>
+        <button id="showRegisterBtn">Daftar</button>
+    </div>
+    <div id="loginPanel">
+        <div class="field">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="loginEmail" placeholder="Masukkan Email Anda">
+        </div>
+        <div class="field">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="loginPassword" placeholder="Masukkan Password">
+        </div>
+        <button class="btn" id="loginSubmitBtn">Masuk</button>
+    </div>
+    <div id="registerPanel" style="display:none">
+        <div class="field"><i class="fas fa-user"></i><input type="text" id="regName" placeholder="Nama Lengkap"></div>
+        <div class="field"><i class="fas fa-envelope"></i><input type="email" id="regEmail" placeholder="Email"></div>
+        <div class="field"><i class="fas fa-phone"></i><input type="tel" id="regPhone" placeholder="Telepon"></div>
+        <div class="field"><i class="fas fa-id-card"></i><input type="text" id="regIdNumber" placeholder="No. KTP"></div>
+        <div class="field"><i class="fas fa-lock"></i><input type="password" id="regPassword" placeholder="Password (min 8 karakter)"></div>
+        <button class="btn" id="registerSubmitBtn">Daftar</button>
+    </div>
+</div>
+<script>
+const API = '../backend/api.php';
+
+function toast(msg,type='info'){
+    let t=document.querySelector('.toast');if(t)t.remove();
+    t=document.createElement('div');t.className=`toast ${type}`;
+    t.innerHTML=`<i class="fas fa-${type==='success'?'check-circle':type==='error'?'exclamation-triangle':'info-circle'}"></i> ${msg}`;
+    document.body.appendChild(t);
+    setTimeout(()=>t.classList.add('show'),10);
+    setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300);},3000);
+}
+
+async function apiCall(action, data = {}, method = 'POST') {
+  const opts = {
+    method: method,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
+  let url = `${API}?action=${action}`;
+
+  if (method === 'GET') {
+    const params = new URLSearchParams(data).toString();
+    if (params) {
+      url += `&${params}`;
+    }
+  } else {
+    opts.body = JSON.stringify(data);
+  }
+
+  try {
+    const res = await fetch(url, opts);
+    return await res.json();
+  } catch (e) {
+    return {
+      success: false,
+      message: 'Gagal terhubung ke server'
+    };
+  }
+}
+
+// Cek token lama
+(function(){
+    apiCall('me', {}, 'POST').then(j => {
+        if (j.success) {
+            window.location.href = j.user.role === 'admin' ? 'admin.html' : 'customer.html';
+        }
+    });
+})();
+
+document.getElementById('showLoginBtn').onclick=()=>{
+    document.getElementById('loginPanel').style.display='block';
+    document.getElementById('registerPanel').style.display='none';
+    document.getElementById('showLoginBtn').classList.add('active');
+    document.getElementById('showRegisterBtn').classList.remove('active');
+};
+document.getElementById('showRegisterBtn').onclick=()=>{
+    document.getElementById('loginPanel').style.display='none';
+    document.getElementById('registerPanel').style.display='block';
+    document.getElementById('showRegisterBtn').classList.add('active');
+    document.getElementById('showLoginBtn').classList.remove('active');
+};
+
+document.getElementById('loginSubmitBtn').onclick=async ()=>{
+    let email=document.getElementById('loginEmail').value.trim();
+    let pass=document.getElementById('loginPassword').value;
+    if(!email||!pass) return toast('Isi email dan password','error');
+    let json=await apiCall('login',{email,password:pass});
+    if(!json.success) return toast(json.message,'error');
+    window.location.href=json.user.role==='admin'?'admin.html':'customer.html';
+};
+
+document.getElementById('registerSubmitBtn').onclick=async ()=>{
+    let name=document.getElementById('regName').value.trim();
+    let email=document.getElementById('regEmail').value.trim();
+    let pass=document.getElementById('regPassword').value;
+    let phone=document.getElementById('regPhone').value.trim();
+    let idNum=document.getElementById('regIdNumber').value.trim();
+    if(!name||!email||!pass) return toast('Lengkapi data','error');
+    if(pass.length<8) return toast('Password minimal 8 karakter','error');
+    let json=await apiCall('register',{name,email,password:pass,phone,id_number:idNum});
+    if(!json.success) return toast(json.message,'error');
+    toast('Registrasi berhasil! Silakan login.','success');
+    document.getElementById('showLoginBtn').click();
+};
+</script>
+</body>
+</html>
